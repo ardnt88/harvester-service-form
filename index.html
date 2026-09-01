@@ -492,70 +492,64 @@
         }
 
         // Setup event listeners
-        function setupEventListeners() {
-            // Get unique agronomists from master data
-            const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()]
-                .map(row => [row[0], row[1]]);
+function setupEventListeners() {
+    // Get unique agronomists from master data
+    const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()]
+        .map(row => [row[0], row[1]]);
 
-            // Agronomist search
-            document.getElementById('agronomistInput').addEventListener('input', (e) => {
-                filterDropdown(e.target.value, 'agronomist', agronomists);
-            });
+    // Agronomist search
+    document.getElementById('agronomistInput').addEventListener('input', (e) => {
+        filterDropdown(e.target.value, 'agronomist', agronomists);
+    });
 
-            document.getElementById('agronomistInput').addEventListener('focus', () => {
-                showDropdown('agronomist', agronomists);
-            });
+    document.getElementById('agronomistInput').addEventListener('focus', () => {
+        showDropdown('agronomist', agronomists);
+    });
 
-            // Farmer Group search (filtered by agronomist)
-            document.getElementById('farmerGroupInput').addEventListener('input', (e) => {
-                const filtered = getFilteredFarmerGroups();
-                filterDropdown(e.target.value, 'farmerGroup', filtered);
-            });
+    // Farmer Group search (filtered by agronomist)
+    document.getElementById('farmerGroupInput').addEventListener('input', (e) => {
+        const filtered = getFilteredFarmerGroups();
+        filterDropdown(e.target.value, 'farmerGroup', filtered);
+    });
 
-            document.getElementById('farmerGroupInput').addEventListener('focus', () => {
-                const filtered = getFilteredFarmerGroups();
-                showDropdown('farmerGroup', filtered);
-            });
+    document.getElementById('farmerGroupInput').addEventListener('focus', () => {
+        const filtered = getFilteredFarmerGroups();
+        showDropdown('farmerGroup', filtered);
+    });
 
-            // Farmer search (filtered by farmer group)
-            document.getElementById('farmerInput').addEventListener('input', (e) => {
-                const filtered = getFilteredFarmers();
-                filterDropdown(e.target.value, 'farmer', filtered);
-            });
+    // Farmer search (filtered by farmer group)
+    document.getElementById('farmerInput').addEventListener('input', (e) => {
+        const filtered = getFilteredFarmers();
+        filterDropdown(e.target.value, 'farmer', filtered);
+    });
 
-            document.getElementById('farmerInput').addEventListener('focus', () => {
-                const filtered = getFilteredFarmers();
-                showDropdown('farmer', filtered);
-            });
+    document.getElementById('farmerInput').addEventListener('focus', () => {
+        const filtered = getFilteredFarmers();
+        showDropdown('farmer', filtered);
+    });
 
-            // Paddy Buyer search (filtered by farmer group)
-            document.getElementById('paddyBuyerInput').addEventListener('input', (e) => {
-                const filtered = state.paddyBuyers.filter(pb =>
-                    !state.selectedFarmerGroup || pb[1] === state.selectedFarmerGroup
-                );
-                filterDropdown(e.target.value, 'paddyBuyer', filtered);
-            });
+    // Paddy Buyer search (NO FILTERING - show all)
+    document.getElementById('paddyBuyerInput').addEventListener('input', (e) => {
+        filterDropdown(e.target.value, 'paddyBuyer', state.paddyBuyers);
+    });
 
-            document.getElementById('paddyBuyerInput').addEventListener('focus', () => {
-                const filtered = state.paddyBuyers.filter(pb =>
-                    !state.selectedFarmerGroup || pb[1] === state.selectedFarmerGroup
-                );
-                showDropdown('paddyBuyer', filtered);
-            });
+    document.getElementById('paddyBuyerInput').addEventListener('focus', () => {
+        showDropdown('paddyBuyer', state.paddyBuyers);
+    });
 
-            // Form submission
-            document.getElementById('harvesterForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                submitForm();
-            });
+    // Form submission
+    document.getElementById('harvesterForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        submitForm();
+    });
 
-            // Close dropdowns on outside click
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.relative-field')) {
-                    closeAllDropdowns();
-                }
-            });
+    // Close dropdowns on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.relative-field')) {
+            closeAllDropdowns();
         }
+    });
+}
 
         // Filter and display dropdown
         function filterDropdown(searchText, fieldId, dataArray) {
