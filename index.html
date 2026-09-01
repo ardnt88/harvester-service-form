@@ -437,8 +437,8 @@
     <script>
         // Configuration - Replace with your actual GSheet IDs and API key
         const CONFIG = {
-            SHEET_ID: 'YOUR_GSHEET_ID_HERE',
-            API_KEY: 'YOUR_GOOGLE_API_KEY_HERE',
+            SHEET_ID: '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M',
+            // Using Apps Script for form submission
             RANGES: {
                 masterData: 'Master Data!A2:F',
                 paddyBuyers: 'PaddyBuyers!A2:C'
@@ -483,7 +483,8 @@
 
         // Fetch data from GSheet via API
         async function fetchSheetData(range) {
-            // Mock implementation - replace with actual API call
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/d/SCRIPT_ID/userweb';
+            // Call Apps Script web app
             // In production, use: https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{range}
 
             // For now, return empty array (you'll populate this with API)
@@ -800,7 +801,8 @@
                 ''                             // AA: Transfer Proof to Rize
             ]];
 
-            // Mock implementation - replace with actual API call
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/d/SCRIPT_ID/userweb';
+            // Call Apps Script web app
             // In production, use Google Sheets API to append row:
             // POST https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/Sheet1!A:AA:append
 
