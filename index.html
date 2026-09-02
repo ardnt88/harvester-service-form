@@ -439,7 +439,7 @@
         };
 
         // Apps Script URL - READ & WRITE
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ChPuSugSNIQTumrWHf1TqZwOIJPGSQZprD-flL137sxjTRGJscFpO2NMrsyFe30SGw/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzKf2NPRhyDYhaWUaC0DYtZBk5lL-23IIhKD63zQcnPRqbpYbXzkCjVvBbarQ7NAcxCMQ/exec';
 
         // Initialize form
         document.addEventListener('DOMContentLoaded', async () => {
@@ -733,22 +733,36 @@
             }
         }
         
-// Submit to GSheet
+// Submit to GSheet via GET (no CORS issues)
 async function submitToGSheet(data) {
     try {
-        // Use image fetch to bypass CORS (no response expected)
-        const img = new Image();
-        img.src = APPS_SCRIPT_URL + '?submit=' + encodeURIComponent(JSON.stringify(data));
+        // Build URL with form data as query parameters
+        const params = new URLSearchParams({
+            submit: 'true',
+            timestamp: data.timestamp,
+            quotation: data.quotation,
+            agronomist: data.agronomist,
+            farmer: data.farmer,
+            farmerGroup: data.farmerGroup,
+            paddyBuyer: data.paddyBuyer,
+            harvestDate: data.harvestDate,
+            hectare: data.hectare
+        });
         
-        // Wait a moment for the request to be sent
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const url = APPS_SCRIPT_URL + '?' + params.toString();
+        
+        // Use image tag to make GET request (bypasses CORS completely)
+        const img = new Image();
+        img.src = url;
+        
+        // Wait for request to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         return Promise.resolve();
     } catch (error) {
         throw new Error(`Failed to submit: ${error.message}`);
     }
 }
-
         // Show status message
         function showStatus(message, type) {
             const statusEl = document.getElementById('statusMessage');
