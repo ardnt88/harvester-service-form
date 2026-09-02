@@ -435,23 +435,16 @@
     </div>
 
     <script>
-        // Configuration - Replace with your actual GSheet IDs and API key
-        const CONFIG = {
-            SHEET_ID: '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M',
-            // Using Apps Script for form submission
-            RANGES: {
-                masterData: 'Master Data!A2:F',
-                paddyBuyers: 'PaddyBuyers!A2:C'
-            }
-        };
-
         // State
         const state = {
-            masterData: [],    // All rows: Agronomist, FG, Farmer
+            masterData: [],
             paddyBuyers: [],
             selectedAgronomist: null,
             selectedFarmerGroup: null
         };
+
+        // Apps Script URL - READ & WRITE
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-s4AGr76GiHRIJtD8cfhyvaT3ZmxuAeHzNzXK80pI1nPNJkBVi_Fl8-80-Tkehq95og/exec';
 
         // Initialize form
         document.addEventListener('DOMContentLoaded', async () => {
@@ -466,8 +459,8 @@
 
                 // Fetch all data
                 const [masterData, paddyBuyers] = await Promise.all([
-                    fetchSheetData('Master Data!A2:F'),
-                    fetchSheetData('PaddyBuyers!A2:C')
+                    fetchSheetData('master'),
+                    fetchSheetData('pb')
                 ]);
 
                 state.masterData = masterData || [];
@@ -481,83 +474,77 @@
             }
         }
 
-        // Fetch data from GSheet via API
-async function fetchSheetData(range) {
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-s4AGr76GiHRIJtD8cfhyvaT3ZmxuAeHzNzXK80pI1nPNJkBVi_Fl8-80-Tkehq95og/exec';
-    let type = 'master';
-    if (range.includes('PaddyBuyers') || range.includes('pb')) {
-      type = 'pb';
-    }
-    
-    try {
-        const response = await fetch(APPS_SCRIPT_URL + '?type=' + type);
-        const result = await response.json();
-        return result.values || [];
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return [];
-    }
-}
+        // Fetch data from GSheet
+        async function fetchSheetData(type) {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?type=' + type);
+                const result = await response.json();
+                return result.values || [];
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return [];
+            }
+        }
 
         // Setup event listeners
-function setupEventListeners() {
-    // Get unique agronomists from master data
-    const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()]
-        .map(row => [row[0], row[1]]);
+        function setupEventListeners() {
+            // Get unique agronomists from master data
+            const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()]
+                .map(row => [row[0], row[1]]);
 
-    // Agronomist search
-    document.getElementById('agronomistInput').addEventListener('input', (e) => {
-        filterDropdown(e.target.value, 'agronomist', agronomists);
-    });
+            // Agronomist search
+            document.getElementById('agronomistInput').addEventListener('input', (e) => {
+                filterDropdown(e.target.value, 'agronomist', agronomists);
+            });
 
-    document.getElementById('agronomistInput').addEventListener('focus', () => {
-        showDropdown('agronomist', agronomists);
-    });
+            document.getElementById('agronomistInput').addEventListener('focus', () => {
+                showDropdown('agronomist', agronomists);
+            });
 
-    // Farmer Group search (filtered by agronomist)
-    document.getElementById('farmerGroupInput').addEventListener('input', (e) => {
-        const filtered = getFilteredFarmerGroups();
-        filterDropdown(e.target.value, 'farmerGroup', filtered);
-    });
+            // Farmer Group search (filtered by agronomist)
+            document.getElementById('farmerGroupInput').addEventListener('input', (e) => {
+                const filtered = getFilteredFarmerGroups();
+                filterDropdown(e.target.value, 'farmerGroup', filtered);
+            });
 
-    document.getElementById('farmerGroupInput').addEventListener('focus', () => {
-        const filtered = getFilteredFarmerGroups();
-        showDropdown('farmerGroup', filtered);
-    });
+            document.getElementById('farmerGroupInput').addEventListener('focus', () => {
+                const filtered = getFilteredFarmerGroups();
+                showDropdown('farmerGroup', filtered);
+            });
 
-    // Farmer search (filtered by farmer group)
-    document.getElementById('farmerInput').addEventListener('input', (e) => {
-        const filtered = getFilteredFarmers();
-        filterDropdown(e.target.value, 'farmer', filtered);
-    });
+            // Farmer search (filtered by farmer group)
+            document.getElementById('farmerInput').addEventListener('input', (e) => {
+                const filtered = getFilteredFarmers();
+                filterDropdown(e.target.value, 'farmer', filtered);
+            });
 
-    document.getElementById('farmerInput').addEventListener('focus', () => {
-        const filtered = getFilteredFarmers();
-        showDropdown('farmer', filtered);
-    });
+            document.getElementById('farmerInput').addEventListener('focus', () => {
+                const filtered = getFilteredFarmers();
+                showDropdown('farmer', filtered);
+            });
 
-    // Paddy Buyer search (NO FILTERING - show all)
-    document.getElementById('paddyBuyerInput').addEventListener('input', (e) => {
-        filterDropdown(e.target.value, 'paddyBuyer', state.paddyBuyers);
-    });
+            // Paddy Buyer search (NO FILTERING - show all)
+            document.getElementById('paddyBuyerInput').addEventListener('input', (e) => {
+                filterDropdown(e.target.value, 'paddyBuyer', state.paddyBuyers);
+            });
 
-    document.getElementById('paddyBuyerInput').addEventListener('focus', () => {
-        showDropdown('paddyBuyer', state.paddyBuyers);
-    });
+            document.getElementById('paddyBuyerInput').addEventListener('focus', () => {
+                showDropdown('paddyBuyer', state.paddyBuyers);
+            });
 
-    // Form submission
-    document.getElementById('harvesterForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        submitForm();
-    });
+            // Form submission
+            document.getElementById('harvesterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitForm();
+            });
 
-    // Close dropdowns on outside click
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.relative-field')) {
-            closeAllDropdowns();
+            // Close dropdowns on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.relative-field')) {
+                    closeAllDropdowns();
+                }
+            });
         }
-    });
-}
 
         // Filter and display dropdown
         function filterDropdown(searchText, fieldId, dataArray) {
@@ -582,7 +569,7 @@ function setupEventListeners() {
                 const div = document.createElement('div');
                 div.className = 'dropdown-item';
                 div.textContent = item[0];
-                div.onclick = () => selectItem(fieldId, item[0], item[2]);
+                div.onclick = () => selectItem(fieldId, item[0], item[1]);
                 dropdown.appendChild(div);
             });
 
@@ -620,7 +607,6 @@ function setupEventListeners() {
         function getFilteredFarmerGroups() {
             if (!state.selectedAgronomist) return [];
             const filtered = state.masterData.filter(row => row[1] === state.selectedAgronomist);
-            // Get unique FGs: [name, id]
             return [...new Map(filtered.map(row => [row[3], [row[2], row[3]]])).values()];
         }
 
@@ -628,7 +614,6 @@ function setupEventListeners() {
         function getFilteredFarmers() {
             if (!state.selectedFarmerGroup) return [];
             const filtered = state.masterData.filter(row => row[3] === state.selectedFarmerGroup);
-            // Get farmers: [name, id]
             return filtered.map(row => [row[4], row[5]]);
         }
 
@@ -735,9 +720,7 @@ function setupEventListeners() {
                 hectare: parseFloat(document.getElementById('hectare').value),
                 paddyBuyer: document.getElementById('paddyBuyerInput').value,
                 quotation: document.getElementById('quotation').value,
-                quotationIDR: parseQuotation(document.getElementById('quotation').value),
-                harvestDate: document.getElementById('harvestDate').value,
-                totalCost: parseFloat(document.getElementById('hectare').value) * parseQuotation(document.getElementById('quotation').value)
+                harvestDate: document.getElementById('harvestDate').value
             };
 
             try {
@@ -759,65 +742,22 @@ function setupEventListeners() {
 
         // Submit to GSheet
         async function submitToGSheet(data) {
-            // Map form data to response sheet columns
-            // Only populate: A, B, C, D, E, K, Q, R (others left blank for manual entry)
-            // A: Timestamp
-            // B: Quotation Harvester
-            // C: Agronomist Name
-            // D: Farmer Name
-            // E: Farmer Group
-            // F-J: INV/SA Outstanding (blank - manual)
-            // K: PB Name
-            // L-O: PB details (blank - manual)
-            // Q: Harvest Date
-            // R: Harvester Hectare Participated
-            // S-X: Rates & calculations (blank - optional calculations)
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
 
-            const values = [[
-                data.timestamp,                // A: Timestamp
-                data.quotation,                // B: Quotation Harvester
-                data.agronomist,               // C: Agronomist Name
-                data.farmer,                   // D: Farmer Name
-                data.farmerGroup,              // E: Farmer Group
-                '',                            // F: INV Outstanding
-                '',                            // G: Subtotal INV Outstanding Amount
-                '',                            // H: SA Outstanding
-                '',                            // I: Subtotal SA Outstanding Amount
-                '',                            // J: Total Outstanding
-                data.paddyBuyer,               // K: PB Name
-                '',                            // L: PB ID
-                '',                            // M: PB Beneficiary Name
-                '',                            // N: PB Bank Account Number
-                '',                            // O: PB Bank Name
-                data.harvestDate,              // P: Harvest Date
-                data.hectare,                  // Q: Harvester Hectare Participated
-                '',                            // R: Harvester Rate per Ha
-                '',                            // S: Harverster Financed Amount
-                '',                            // T: Harvester Advisory Fee per Ha
-                '',                            // U: Harvester Total Advisory
-                '',                            // V: Harvester Total Revenue
-                '',                            // W: GM1 %
-                '',                            // X: Harvester Repayment Date
-                '',                            // Y: Activity Report
-                '',                            // Z: Delivery Proof to Offtake Buyer
-                ''                             // AA: Transfer Proof to Rize
-            ]];
-
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/d/SCRIPT_ID/userweb';
-            // Call Apps Script web app
-            // In production, use Google Sheets API to append row:
-            // POST https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/Sheet1!A:AA:append
-
-            console.log('Form data to submit:', data);
-            console.log('Mapped to sheet columns:', values[0]);
-
-            // Simulate API delay
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    // In real implementation, send to GSheet here
-                    resolve();
-                }, 800);
-            });
+                const result = await response.json();
+                if (result.success) {
+                    return Promise.resolve();
+                } else {
+                    throw new Error(result.error || 'Submission failed');
+                }
+            } catch (error) {
+                throw new Error(`Failed to submit: ${error.message}`);
+            }
         }
 
         // Show status message
