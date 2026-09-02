@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
             min-height: 100vh;
             padding: 20px;
             color: #333;
@@ -300,7 +300,6 @@
     <div class="container">
         <div class="header">
             <h1>🌾 Harvester Service Request</h1>
-            <p>Submit mechanization service request for finance review</p>
         </div>
 
         <div class="form-container">
@@ -391,24 +390,20 @@
                         <div id="paddyBuyerDropdown" class="dropdown-list"></div>
                     </div>
                     <input type="hidden" id="paddyBuyer" name="paddyBuyer">
-                    <p class="helper-text">Buyer linked to selected farmer group</p>
                     <div class="error-message" id="paddyBuyerError"></div>
                 </div>
 
                 <!-- Quotation Harvester -->
                 <div class="form-group required">
-                    <label for="quotation">
-                        Quotation Harvester
-                        <span class="field-counter">IDR</span>
-                    </label>
+                    <label for="quotation">Quotation Harvester</label>
                     <input
                         type="text"
                         id="quotation"
                         name="quotation"
-                        placeholder="e.g., 450000 or 450k"
+                        placeholder="e.g., QT-123456"
                         required
                     >
-                    <p class="helper-text">Cost per hectare (numeric + optional 'k' for thousands)</p>
+                    <p class="helper-text">QT harvester must be created in Zoho</p>
                     <div class="error-message" id="quotationError"></div>
                 </div>
 
@@ -444,7 +439,7 @@
         };
 
         // Apps Script URL - READ & WRITE
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxiL6_mUdH8zgQI1fzlu85VMuuc_iY_doz3dXDUBLFgxkZkYzxB8JotU4L_stZOWe1KSw/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ChPuSugSNIQTumrWHf1TqZwOIJPGSQZprD-flL137sxjTRGJscFpO2NMrsyFe30SGw/exec';
 
         // Initialize form
         document.addEventListener('DOMContentLoaded', async () => {
@@ -682,8 +677,6 @@
             }
             if (!document.getElementById('quotation').value) {
                 errors.quotation = 'Quotation is required';
-            } else if (!isValidQuotation(document.getElementById('quotation').value)) {
-                errors.quotation = 'Quotation must be numeric or include "k" (e.g., 450k)';
             }
             if (!document.getElementById('harvestDate').value) {
                 errors.harvestDate = 'Harvest Date is required';
@@ -699,20 +692,6 @@
             });
 
             return Object.keys(errors).length === 0;
-        }
-
-        // Validate quotation format
-        function isValidQuotation(value) {
-            return /^[\d.]+k?$/.test(value.trim());
-        }
-
-        // Parse quotation (e.g., "450k" -> 450000)
-        function parseQuotation(value) {
-            const trimmed = value.trim().toUpperCase();
-            if (trimmed.endsWith('K')) {
-                return parseFloat(trimmed.slice(0, -1)) * 1000;
-            }
-            return parseFloat(trimmed);
         }
 
         // Submit form
