@@ -483,8 +483,7 @@
 
         // Fetch data from GSheet via API
 async function fetchSheetData(range) {
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-s4AGr76GiHRIJtD8cfhyvaT3ZmxuAeHzNzXK80pI1nPNJkBVi_Fl8-80-Tkehq95og/usercache_execute';
-    
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-s4AGr76GiHRIJtD8cfhyvaT3ZmxuAeHzNzXK80pI1nPNJkBVi_Fl8-80-Tkehq95og/exec';
     let type = 'master';
     if (range.includes('PaddyBuyers') || range.includes('pb')) {
       type = 'pb';
