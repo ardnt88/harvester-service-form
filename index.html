@@ -452,48 +452,53 @@
             setupEventListeners();
         });
 
+        // Fetch data from GSheet
+        async function fetchSheetData(type) {
+            console.log('📥 Fetching data for type:', type);
+            try {
+                const url = APPS_SCRIPT_URL + '?type=' + type;
+                console.log('🔗 URL:', url);
+
+                const response = await fetch(url);
+                console.log('📊 Response status:', response.status);
+
+                const result = await response.json();
+                console.log('✅ Result:', result);
+
+                return result.values || [];
+            } catch (error) {
+                console.error('❌ Fetch error:', error);
+                return [];
+            }
+        }
+
         // Load data from GSheet
         async function loadData() {
             try {
                 showStatus('Loading data...', 'loading');
+                console.log('🚀 Starting loadData()');
 
                 // Fetch all data
-                const [masterData, paddyBuyers] = await Promise.all([
-                    fetchSheetData('master'),
-                    fetchSheetData('pb')
-                ]);
+                console.log('📦 Fetching master data...');
+                const masterData = await fetchSheetData('master');
+                console.log('Master data rows:', masterData.length);
+
+                console.log('📦 Fetching PB data...');
+                const paddyBuyers = await fetchSheetData('pb');
+                console.log('PB data rows:', paddyBuyers.length);
 
                 state.masterData = masterData || [];
                 state.paddyBuyers = paddyBuyers || [];
+
+                console.log('✅ State updated:', state);
 
                 showStatus('Data loaded successfully', 'success');
                 clearStatus(3000);
             } catch (error) {
                 showStatus(`Error loading data: ${error.message}`, 'error');
-                console.error('Data load error:', error);
+                console.error('❌ Data load error:', error);
             }
         }
-
-        // Fetch data from GSheet
-async function fetchSheetData(type) {
-    console.log('Fetching data for type:', type);
-    try {
-        const url = APPS_SCRIPT_URL + '?type=' + type;
-        console.log('Fetch URL:', url);
-        
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
-        const result = await response.json();
-        console.log('Result for type ' + type + ':', result);
-        
-        return result.values || [];
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return [];
-    }
-}
 
         // Setup event listeners
         function setupEventListeners() {
