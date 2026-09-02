@@ -482,14 +482,18 @@
         }
 
         // Fetch data from GSheet via API
-        async function fetchSheetData(range) {
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzw0j6hr3FFnxMkSBloserJt_hlBLoALtluaNfYsOgajPK6GAgo0K2BplGOIltaHFQO2Q/exec';
-            // Call Apps Script web app
-            // In production, use: https://sheets.googleapis.com/v4/spreadsheets/{SHEET_ID}/values/{range}
-
-            // For now, return empty array (you'll populate this with API)
-            return [];
-        }
+async function fetchSheetData(range) {
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-s4AGr76GiHRIJtD8cfhyvaT3ZmxuAeHzNzXK80pI1nPNJkBVi_Fl8-80-Tkehq95og/exec';
+    
+    try {
+        const response = await fetch(APPS_SCRIPT_URL + '?range=' + encodeURIComponent(range));
+        const result = await response.json();
+        return result.values || [];
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return [];
+    }
+}
 
         // Setup event listeners
 function setupEventListeners() {
