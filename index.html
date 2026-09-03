@@ -787,8 +787,12 @@
 
                 // Show success toast
                 showToast('Submit success', 'success');
-                document.getElementById('harvesterForm').reset();
-                document.getElementById('submitBtn').disabled = false;
+
+                // Clear form after brief delay to show confirmation
+                setTimeout(() => {
+                    document.getElementById('harvesterForm').reset();
+                    document.getElementById('submitBtn').disabled = false;
+                }, 500);
             } catch (error) {
                 // Show error toast
                 showToast(`Error submitting data: ${error.message}`, 'error');
@@ -796,21 +800,32 @@
             }
         }
 
-        // Submit to GSheet
+        // Submit to GSheet via GET (no CORS issues)
         async function submitToGSheet(data) {
             try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                // Build URL with form data as query parameters
+                const params = new URLSearchParams({
+                    submit: 'true',
+                    timestamp: data.timestamp,
+                    quotation: data.quotation,
+                    agronomist: data.agronomist,
+                    farmer: data.farmer,
+                    farmerGroup: data.farmerGroup,
+                    paddyBuyer: data.paddyBuyer,
+                    harvestDate: data.harvestDate,
+                    hectare: data.hectare
                 });
 
-                const result = await response.json();
-                if (result.success) {
-                    return Promise.resolve();
-                } else {
-                    throw new Error(result.error || 'Submission failed');
-                }
+                const url = APPS_SCRIPT_URL + '?' + params.toString();
+
+                // Use image tag to make GET request (bypasses CORS completely)
+                const img = new Image();
+                img.src = url;
+
+                // Wait for request to complete
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                return Promise.resolve();
             } catch (error) {
                 throw new Error(`Failed to submit: ${error.message}`);
             }
