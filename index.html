@@ -764,7 +764,7 @@
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
 
             if (!validateForm()) {
-                showStatus('Please fix errors above', 'error');
+                showToast('Please fix errors above', 'error');
                 return;
             }
 
@@ -792,7 +792,7 @@
                 setTimeout(() => {
                     document.getElementById('harvesterForm').reset();
                     document.getElementById('submitBtn').disabled = false;
-                }, 500);
+                }, 1500);
             } catch (error) {
                 // Show error toast
                 showToast(`Error submitting data: ${error.message}`, 'error');
