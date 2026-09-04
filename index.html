@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: white;
@@ -18,7 +17,6 @@
             padding: 20px;
             color: #333;
         }
-
         .container {
             max-width: 700px;
             margin: 0 auto;
@@ -27,32 +25,26 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px 20px;
             text-align: center;
         }
-
         .header h1 {
             font-size: 24px;
             margin-bottom: 8px;
         }
-
         .header p {
             font-size: 14px;
             opacity: 0.9;
         }
-
         .form-container {
             padding: 30px 20px;
         }
-
         .form-group {
             margin-bottom: 24px;
         }
-
         .form-group label {
             display: block;
             font-weight: 600;
@@ -60,12 +52,10 @@
             font-size: 14px;
             color: #333;
         }
-
         .form-group.required label::after {
             content: ' *';
             color: #e74c3c;
         }
-
         input[type="text"],
         input[type="number"],
         input[type="date"],
@@ -78,7 +68,6 @@
             font-family: inherit;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
-
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="date"]:focus,
@@ -87,22 +76,18 @@
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-
         input:disabled,
         select:disabled {
             background-color: #f5f5f5;
             cursor: not-allowed;
             opacity: 0.6;
         }
-
         .search-input-wrapper {
             position: relative;
         }
-
         .search-input-wrapper input {
             padding-right: 36px;
         }
-
         .search-input-wrapper .clear-btn {
             position: absolute;
             right: 12px;
@@ -116,11 +101,9 @@
             padding: 0;
             display: none;
         }
-
         .search-input-wrapper input:not(:placeholder-shown) ~ .clear-btn {
             display: block;
         }
-
         .dropdown-list {
             position: absolute;
             top: 100%;
@@ -136,11 +119,9 @@
             display: none;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-
         .dropdown-list.active {
             display: block;
         }
-
         .dropdown-item {
             padding: 10px 12px;
             cursor: pointer;
@@ -148,49 +129,40 @@
             font-size: 14px;
             transition: background-color 0.2s;
         }
-
         .dropdown-item:last-child {
             border-bottom: none;
         }
-
         .dropdown-item:hover {
             background-color: #f5f5f5;
         }
-
         .dropdown-item.selected {
             background-color: #e8f0ff;
             color: #667eea;
             font-weight: 600;
         }
-
         .helper-text {
             font-size: 12px;
             color: #666;
             margin-top: 4px;
         }
-
         .error-message {
             color: #e74c3c;
             font-size: 12px;
             margin-top: 4px;
             display: none;
         }
-
         .error-message.show {
             display: block;
         }
-
         .form-group.error input,
         .form-group.error select {
             border-color: #e74c3c;
         }
-
         .button-group {
             display: flex;
             gap: 12px;
             margin-top: 32px;
         }
-
         button {
             flex: 1;
             padding: 12px 20px;
@@ -201,31 +173,25 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
         .btn-submit {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
         .btn-submit:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
-
         .btn-submit:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-
         .btn-reset {
             background: #f5f5f5;
             color: #333;
         }
-
         .btn-reset:hover {
             background: #e8e8e8;
         }
-
         .status-message {
             padding: 12px 16px;
             border-radius: 6px;
@@ -233,28 +199,24 @@
             display: none;
             font-size: 14px;
         }
-
         .status-message.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
             display: block;
         }
-
         .status-message.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
             display: block;
         }
-
         .status-message.loading {
             background: #d1ecf1;
             color: #0c5460;
             border: 1px solid #bee5eb;
             display: block;
         }
-
         .loading-spinner {
             display: inline-block;
             width: 14px;
@@ -265,21 +227,12 @@
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        .field-counter {
-            float: right;
-            font-size: 12px;
-            color: #999;
-        }
-
         .relative-field {
             position: relative;
         }
-
         .toast-container {
             position: fixed;
             top: 20px;
@@ -287,7 +240,6 @@
             z-index: 9999;
             max-width: 400px;
         }
-
         .toast {
             background: white;
             border-radius: 8px;
@@ -298,17 +250,14 @@
             font-size: 14px;
             line-height: 1.5;
         }
-
         .toast.success {
             border-left: 4px solid #28a745;
             color: #155724;
         }
-
         .toast.error {
             border-left: 4px solid #dc3545;
             color: #721c24;
         }
-
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -319,7 +268,6 @@
                 opacity: 1;
             }
         }
-
         @keyframes slideOut {
             from {
                 transform: translateX(0);
@@ -330,73 +278,121 @@
                 opacity: 0;
             }
         }
-
         .toast.removing {
             animation: slideOut 0.3s ease-out;
         }
-
+        .outstanding-section {
+            margin: 24px 0;
+            padding: 16px;
+            background: #f0f8ff;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+        }
+        .outstanding-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 14px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .outstanding-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .outstanding-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .outstanding-item label {
+            display: block;
+            font-weight: 600;
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .outstanding-list {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 6px 0;
+        }
+        .outstanding-subtotal {
+            font-size: 12px;
+            color: #666;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+            font-weight: 600;
+        }
+        .outstanding-subtotal span {
+            color: #667eea;
+            font-weight: 700;
+        }
+        .outstanding-total {
+            background: #e8f0ff;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+        }
+        .outstanding-total span {
+            color: #764ba2;
+            font-size: 16px;
+        }
         @media (max-width: 600px) {
             .form-container {
                 padding: 20px 16px;
             }
-
             .header h1 {
                 font-size: 20px;
             }
-
             button {
                 padding: 10px 16px;
                 font-size: 13px;
             }
-
             .toast-container {
                 left: 20px;
                 right: 20px;
                 max-width: none;
+            }
+            .outstanding-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div id="toastContainer" class="toast-container"></div>
-
     <div class="container">
         <div class="header">
             <h1>🌾 Harvester Service Request</h1>
         </div>
-
         <div class="form-container">
             <div id="statusMessage" class="status-message"></div>
-
             <form id="harvesterForm" method="POST">
-
-                <!-- Agronomist Name -->
                 <div class="form-group required relative-field">
                     <label for="agronomist">Agronomist Name</label>
                     <div class="search-input-wrapper">
-                        <input
-                            type="text"
-                            id="agronomistInput"
-                            placeholder="Search agronomist..."
-                            autocomplete="off"
-                        >
+                        <input type="text" id="agronomistInput" placeholder="Search agronomist..." autocomplete="off">
                         <button type="button" class="clear-btn" onclick="clearField('agronomist')">✕</button>
                         <div id="agronomistDropdown" class="dropdown-list"></div>
                     </div>
                     <input type="hidden" id="agronomist" name="agronomist">
                     <div class="error-message" id="agronomistError"></div>
                 </div>
-
-                <!-- Farmer Group -->
                 <div class="form-group required relative-field">
                     <label for="farmerGroup">Farmer Group</label>
                     <div class="search-input-wrapper">
-                        <input
-                            type="text"
-                            id="farmerGroupInput"
-                            placeholder="Search farmer group..."
-                            autocomplete="off"
-                        >
+                        <input type="text" id="farmerGroupInput" placeholder="Search farmer group..." autocomplete="off">
                         <button type="button" class="clear-btn" onclick="clearField('farmerGroup')">✕</button>
                         <div id="farmerGroupDropdown" class="dropdown-list"></div>
                     </div>
@@ -404,17 +400,10 @@
                     <p class="helper-text">Only groups related to selected agronomist</p>
                     <div class="error-message" id="farmerGroupError"></div>
                 </div>
-
-                <!-- Farmer Name -->
                 <div class="form-group required relative-field">
                     <label for="farmer">Farmer Name</label>
                     <div class="search-input-wrapper">
-                        <input
-                            type="text"
-                            id="farmerInput"
-                            placeholder="Search farmer..."
-                            autocomplete="off"
-                        >
+                        <input type="text" id="farmerInput" placeholder="Search farmer..." autocomplete="off">
                         <button type="button" class="clear-btn" onclick="clearField('farmer')">✕</button>
                         <div id="farmerDropdown" class="dropdown-list"></div>
                     </div>
@@ -422,68 +411,54 @@
                     <p class="helper-text">Only farmers in selected farmer group</p>
                     <div class="error-message" id="farmerError"></div>
                 </div>
-
-                <!-- Hectare Serviced -->
+                <div id="outstandingSection" class="outstanding-section" style="display: none;">
+                    <div class="outstanding-card">
+                        <h3>Outstanding Summary</h3>
+                        <div class="outstanding-row">
+                            <div class="outstanding-item">
+                                <label>INV Outstanding</label>
+                                <div id="invOutstandingList" class="outstanding-list"></div>
+                                <div class="outstanding-subtotal">Subtotal: <span id="subtotalInv">-</span></div>
+                            </div>
+                            <div class="outstanding-item">
+                                <label>SA Outstanding</label>
+                                <div id="saOutstandingList" class="outstanding-list"></div>
+                                <div class="outstanding-subtotal">Subtotal: <span id="subtotalSa">-</span></div>
+                            </div>
+                        </div>
+                        <div class="outstanding-total">
+                            <strong>Total Outstanding: <span id="totalOutstanding">-</span></strong>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group required">
                     <label for="hectare">Hectare Serviced</label>
-                    <input
-                        type="number"
-                        id="hectare"
-                        name="hectare"
-                        placeholder="e.g., 2.5"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
+                    <input type="number" id="hectare" name="hectare" placeholder="e.g., 2.5" min="0" step="0.01" required>
                     <p class="helper-text">Land area to be harvested (in hectares)</p>
                     <div class="error-message" id="hectareError"></div>
                 </div>
-
-                <!-- Paddy Buyer Name -->
                 <div class="form-group required relative-field">
                     <label for="paddyBuyer">Paddy Buyer Name</label>
                     <div class="search-input-wrapper">
-                        <input
-                            type="text"
-                            id="paddyBuyerInput"
-                            placeholder="Search paddy buyer..."
-                            autocomplete="off"
-                        >
+                        <input type="text" id="paddyBuyerInput" placeholder="Search paddy buyer..." autocomplete="off">
                         <button type="button" class="clear-btn" onclick="clearField('paddyBuyer')">✕</button>
                         <div id="paddyBuyerDropdown" class="dropdown-list"></div>
                     </div>
                     <input type="hidden" id="paddyBuyer" name="paddyBuyer">
                     <div class="error-message" id="paddyBuyerError"></div>
                 </div>
-
-                <!-- Quotation Harvester -->
                 <div class="form-group required">
                     <label for="quotation">Quotation Harvester</label>
-                    <input
-                        type="text"
-                        id="quotation"
-                        name="quotation"
-                        placeholder="e.g., QT-123456"
-                        required
-                    >
+                    <input type="text" id="quotation" name="quotation" placeholder="e.g., QT-123456" required>
                     <p class="helper-text">QT harvester must be created in Zoho</p>
                     <div class="error-message" id="quotationError"></div>
                 </div>
-
-                <!-- Harvest Date -->
                 <div class="form-group required">
                     <label for="harvestDate">Harvest Date</label>
-                    <input
-                        type="date"
-                        id="harvestDate"
-                        name="harvestDate"
-                        required
-                    >
+                    <input type="date" id="harvestDate" name="harvestDate" required>
                     <p class="helper-text">Planned or actual harvest date</p>
                     <div class="error-message" id="harvestDateError"></div>
                 </div>
-
-                <!-- Buttons -->
                 <div class="button-group">
                     <button type="reset" class="btn-reset">Clear Form</button>
                     <button type="submit" class="btn-submit" id="submitBtn">Submit Request</button>
@@ -491,126 +466,87 @@
             </form>
         </div>
     </div>
-
     <script>
-        // State
         const state = {
             masterData: [],
             paddyBuyers: [],
             selectedAgronomist: null,
             selectedFarmerGroup: null
         };
-
-        // Apps Script URL - READ & WRITE
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJy3AGY0UKCT3_NNX0tFzgl7Gaju_gHTGRfeaz0GZF839AS85FW0XUnIeN0WmLWFbP/exec';
+        const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
-        // Initialize form
         document.addEventListener('DOMContentLoaded', async () => {
             await loadData();
             setupEventListeners();
         });
 
-        // Fetch data from GSheet
         async function fetchSheetData(type) {
-            console.log('📥 Fetching data for type:', type);
             try {
                 const url = APPS_SCRIPT_URL + '?type=' + type;
-                console.log('🔗 URL:', url);
-
                 const response = await fetch(url);
-                console.log('📊 Response status:', response.status);
-
                 const result = await response.json();
-                console.log('✅ Result:', result);
-
                 return result.values || [];
             } catch (error) {
-                console.error('❌ Fetch error:', error);
+                console.error('Fetch error:', error);
                 return [];
             }
         }
 
-        // Load data from GSheet
         async function loadData() {
             try {
                 showStatus('Loading data...', 'loading');
-                console.log('🚀 Starting loadData()');
-
-                // Fetch all data
-                console.log('📦 Fetching master data...');
                 const masterData = await fetchSheetData('master');
-                console.log('Master data rows:', masterData.length);
-
-                console.log('📦 Fetching PB data...');
                 const paddyBuyers = await fetchSheetData('pb');
-                console.log('PB data rows:', paddyBuyers.length);
-
                 state.masterData = masterData || [];
                 state.paddyBuyers = paddyBuyers || [];
-
-                console.log('✅ State updated:', state);
-
                 showStatus('Data loaded successfully', 'success');
                 clearStatus(3000);
             } catch (error) {
                 showStatus(`Error loading data: ${error.message}`, 'error');
-                console.error('❌ Data load error:', error);
             }
         }
 
-        // Setup event listeners
         function setupEventListeners() {
-            // Get unique agronomists from master data
-            const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()]
-                .map(row => [row[0], row[1]]);
+            const agronomists = [...new Map(state.masterData.map(row => [row[1], row])).values()].map(row => [row[0], row[1]]);
 
-            // Agronomist search
             document.getElementById('agronomistInput').addEventListener('input', (e) => {
                 filterDropdown(e.target.value, 'agronomist', agronomists);
             });
-
             document.getElementById('agronomistInput').addEventListener('focus', () => {
                 showDropdown('agronomist', agronomists);
             });
 
-            // Farmer Group search (filtered by agronomist)
             document.getElementById('farmerGroupInput').addEventListener('input', (e) => {
                 const filtered = getFilteredFarmerGroups();
                 filterDropdown(e.target.value, 'farmerGroup', filtered);
             });
-
             document.getElementById('farmerGroupInput').addEventListener('focus', () => {
                 const filtered = getFilteredFarmerGroups();
                 showDropdown('farmerGroup', filtered);
             });
 
-            // Farmer search (filtered by farmer group)
             document.getElementById('farmerInput').addEventListener('input', (e) => {
                 const filtered = getFilteredFarmers();
                 filterDropdown(e.target.value, 'farmer', filtered);
             });
-
             document.getElementById('farmerInput').addEventListener('focus', () => {
                 const filtered = getFilteredFarmers();
                 showDropdown('farmer', filtered);
             });
 
-            // Paddy Buyer search (NO FILTERING - show all)
             document.getElementById('paddyBuyerInput').addEventListener('input', (e) => {
                 filterDropdown(e.target.value, 'paddyBuyer', state.paddyBuyers);
             });
-
             document.getElementById('paddyBuyerInput').addEventListener('focus', () => {
                 showDropdown('paddyBuyer', state.paddyBuyers);
             });
 
-            // Form submission
             document.getElementById('harvesterForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 submitForm();
             });
 
-            // Close dropdowns on outside click
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.relative-field')) {
                     closeAllDropdowns();
@@ -618,134 +554,134 @@
             });
         }
 
-        // Filter and display dropdown
         function filterDropdown(searchText, fieldId, dataArray) {
-            const filtered = dataArray.filter(item =>
-                item[0].toLowerCase().includes(searchText.toLowerCase())
-            );
-            showDropdown(fieldId, filtered, searchText);
+            const filtered = dataArray.filter(item => item[0].toLowerCase().includes(searchText.toLowerCase()));
+            showDropdown(fieldId, filtered);
         }
 
-        // Show dropdown with items
         function showDropdown(fieldId, items) {
             const dropdown = document.getElementById(`${fieldId}Dropdown`);
             dropdown.innerHTML = '';
-
             if (!items || items.length === 0) {
                 dropdown.innerHTML = '<div class="dropdown-item" style="color: #999;">No results found</div>';
                 dropdown.classList.add('active');
                 return;
             }
-
-            items.forEach((item, index) => {
+            items.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'dropdown-item';
                 div.textContent = item[0];
                 div.onclick = () => selectItem(fieldId, item[0], item[1]);
                 dropdown.appendChild(div);
             });
-
             dropdown.classList.add('active');
         }
 
-        // Select item from dropdown
-        function selectItem(fieldId, displayValue, id) {
+        async function selectItem(fieldId, displayValue, id) {
             const input = document.getElementById(`${fieldId}Input`);
             const hidden = document.getElementById(fieldId);
-
             input.value = displayValue;
             hidden.value = id || displayValue;
-
             closeAllDropdowns();
 
-            // Update state and cascade filters
             if (fieldId === 'agronomist') {
                 state.selectedAgronomist = id || displayValue;
                 clearField('farmerGroup');
                 clearField('farmer');
-                clearField('paddyBuyer');
             } else if (fieldId === 'farmerGroup') {
                 state.selectedFarmerGroup = id || displayValue;
                 clearField('farmer');
-                clearField('paddyBuyer');
+            } else if (fieldId === 'farmer') {
+                await loadOutstandingData(displayValue);
             }
 
-            // Clear error on selection
             document.getElementById(`${fieldId}Error`).classList.remove('show');
             document.getElementById(`${fieldId}Error`).parentElement.classList.remove('error');
         }
 
-        // Get farmer groups filtered by agronomist
+        async function loadOutstandingData(farmerName) {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${GSHEET_ID}/gviz/tq?tqx=out:json&sheet=Farmer Outstanding INV`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+
+                const rows = json.table.rows;
+                const farmerRow = rows.find(row => row.c[0].v === farmerName);
+
+                if (farmerRow) {
+                    document.getElementById('invOutstandingList').textContent = farmerRow.c[3]?.v || '-';
+                    document.getElementById('subtotalInv').textContent = formatCurrency(farmerRow.c[4]?.v);
+                    document.getElementById('saOutstandingList').textContent = farmerRow.c[5]?.v || '-';
+                    document.getElementById('subtotalSa').textContent = formatCurrency(farmerRow.c[6]?.v);
+                    document.getElementById('totalOutstanding').textContent = formatCurrency(farmerRow.c[7]?.v);
+                    document.getElementById('outstandingSection').style.display = 'block';
+                } else {
+                    document.getElementById('outstandingSection').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading outstanding:', error);
+                document.getElementById('outstandingSection').style.display = 'none';
+            }
+        }
+
+        function formatCurrency(value) {
+            if (!value) return '-';
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
         function getFilteredFarmerGroups() {
             if (!state.selectedAgronomist) return [];
             const filtered = state.masterData.filter(row => row[1] === state.selectedAgronomist);
             return [...new Map(filtered.map(row => [row[3], [row[2], row[3]]])).values()];
         }
 
-        // Get farmers filtered by farmer group
         function getFilteredFarmers() {
             if (!state.selectedFarmerGroup) return [];
             const filtered = state.masterData.filter(row => row[3] === state.selectedFarmerGroup);
             return filtered.map(row => [row[4], row[5]]);
         }
 
-        // Clear field
         function clearField(fieldId) {
             const input = document.getElementById(`${fieldId}Input`);
             const hidden = document.getElementById(fieldId);
-
             if (input) input.value = '';
             if (hidden) hidden.value = '';
-
             closeAllDropdowns();
 
-            // Reset state
             if (fieldId === 'agronomist') {
                 state.selectedAgronomist = null;
                 clearField('farmerGroup');
                 clearField('farmer');
-                clearField('paddyBuyer');
             } else if (fieldId === 'farmerGroup') {
                 state.selectedFarmerGroup = null;
                 clearField('farmer');
-                clearField('paddyBuyer');
+            } else if (fieldId === 'farmer') {
+                document.getElementById('outstandingSection').style.display = 'none';
             }
         }
 
-        // Close all dropdowns
         function closeAllDropdowns() {
             document.querySelectorAll('.dropdown-list').forEach(d => {
                 d.classList.remove('active');
             });
         }
 
-        // Validate form
         function validateForm() {
             const errors = {};
+            if (!document.getElementById('agronomist').value) errors.agronomist = 'Agronomist is required';
+            if (!document.getElementById('farmerGroup').value) errors.farmerGroup = 'Farmer Group is required';
+            if (!document.getElementById('farmer').value) errors.farmer = 'Farmer is required';
+            if (!document.getElementById('hectare').value || parseFloat(document.getElementById('hectare').value) <= 0) errors.hectare = 'Valid hectare amount is required';
+            if (!document.getElementById('paddyBuyer').value) errors.paddyBuyer = 'Paddy Buyer is required';
+            if (!document.getElementById('quotation').value) errors.quotation = 'Quotation is required';
+            if (!document.getElementById('harvestDate').value) errors.harvestDate = 'Harvest Date is required';
 
-            if (!document.getElementById('agronomist').value) {
-                errors.agronomist = 'Agronomist is required';
-            }
-            if (!document.getElementById('farmerGroup').value) {
-                errors.farmerGroup = 'Farmer Group is required';
-            }
-            if (!document.getElementById('farmer').value) {
-                errors.farmer = 'Farmer is required';
-            }
-            if (!document.getElementById('hectare').value || parseFloat(document.getElementById('hectare').value) <= 0) {
-                errors.hectare = 'Valid hectare amount is required';
-            }
-            if (!document.getElementById('paddyBuyer').value) {
-                errors.paddyBuyer = 'Paddy Buyer is required';
-            }
-            if (!document.getElementById('quotation').value) {
-                errors.quotation = 'Quotation is required';
-            }
-            if (!document.getElementById('harvestDate').value) {
-                errors.harvestDate = 'Harvest Date is required';
-            }
-
-            // Display errors
             Object.keys(errors).forEach(field => {
                 const errorEl = document.getElementById(`${field}Error`);
                 const formGroup = errorEl.parentElement;
@@ -753,13 +689,10 @@
                 errorEl.classList.add('show');
                 formGroup.classList.add('error');
             });
-
             return Object.keys(errors).length === 0;
         }
 
-        // Submit form
         async function submitForm() {
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
 
@@ -781,57 +714,38 @@
 
             try {
                 document.getElementById('submitBtn').disabled = true;
-
-                // Send to GSheet
                 await submitToGSheet(formData);
-
-                // Show success toast
                 showToast('Submit success', 'success');
-
-                // Clear form after brief delay to show confirmation
                 setTimeout(() => {
                     document.getElementById('harvesterForm').reset();
+                    document.getElementById('outstandingSection').style.display = 'none';
                     document.getElementById('submitBtn').disabled = false;
                 }, 1500);
             } catch (error) {
-                // Show error toast
                 showToast(`Error submitting data: ${error.message}`, 'error');
                 document.getElementById('submitBtn').disabled = false;
             }
         }
 
-        // Submit to GSheet via GET (no CORS issues)
         async function submitToGSheet(data) {
-            try {
-                // Build URL with form data as query parameters
-                const params = new URLSearchParams({
-                    submit: 'true',
-                    timestamp: data.timestamp,
-                    quotation: data.quotation,
-                    agronomist: data.agronomist,
-                    farmer: data.farmer,
-                    farmerGroup: data.farmerGroup,
-                    paddyBuyer: data.paddyBuyer,
-                    harvestDate: data.harvestDate,
-                    hectare: data.hectare
-                });
-
-                const url = APPS_SCRIPT_URL + '?' + params.toString();
-
-                // Use image tag to make GET request (bypasses CORS completely)
-                const img = new Image();
-                img.src = url;
-
-                // Wait for request to complete
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                return Promise.resolve();
-            } catch (error) {
-                throw new Error(`Failed to submit: ${error.message}`);
-            }
+            const params = new URLSearchParams({
+                submit: 'true',
+                timestamp: data.timestamp,
+                quotation: data.quotation,
+                agronomist: data.agronomist,
+                farmer: data.farmer,
+                farmerGroup: data.farmerGroup,
+                paddyBuyer: data.paddyBuyer,
+                harvestDate: data.harvestDate,
+                hectare: data.hectare
+            });
+            const url = APPS_SCRIPT_URL + '?' + params.toString();
+            const img = new Image();
+            img.src = url;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return Promise.resolve();
         }
 
-        // Show status message
         function showStatus(message, type) {
             const statusEl = document.getElementById('statusMessage');
             statusEl.className = `status-message ${type}`;
@@ -842,23 +756,18 @@
             }
         }
 
-        // Clear status after delay
         function clearStatus(delay = 3000) {
             setTimeout(() => {
                 document.getElementById('statusMessage').style.display = 'none';
             }, delay);
         }
 
-        // Show toast notification
         function showToast(message, type) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
-
             container.appendChild(toast);
-
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 toast.classList.add('removing');
                 setTimeout(() => {
