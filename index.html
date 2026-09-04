@@ -69,6 +69,7 @@
         input[type="text"],
         input[type="number"],
         input[type="date"],
+        input[type="file"],
         select {
             width: 100%;
             padding: 12px;
@@ -77,6 +78,11 @@
             font-size: 14px;
             font-family: inherit;
             transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            cursor: pointer;
         }
 
         input[type="text"]:focus,
@@ -280,6 +286,122 @@
             position: relative;
         }
 
+        .file-list {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item-name {
+            flex: 1;
+            word-break: break-word;
+            color: #333;
+        }
+
+        .file-item-size {
+            font-size: 12px;
+            color: #999;
+            margin-left: 10px;
+        }
+
+        .outstanding-section {
+            margin: 24px 0;
+            padding: 16px;
+            background: #f0f8ff;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+        }
+
+        .outstanding-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 14px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .outstanding-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .outstanding-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .outstanding-item label {
+            display: block;
+            font-weight: 600;
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .outstanding-list {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 6px 0;
+        }
+
+        .outstanding-subtotal {
+            font-size: 12px;
+            color: #666;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+            font-weight: 600;
+        }
+
+        .outstanding-subtotal span {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .outstanding-total {
+            background: #e8f0ff;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .outstanding-total span {
+            color: #764ba2;
+            font-size: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .outstanding-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .toast-container {
             position: fixed;
             top: 20px;
@@ -423,6 +545,28 @@
                     <div class="error-message" id="farmerError"></div>
                 </div>
 
+                <!-- Outstanding Summary (Hidden until farmer selected) -->
+                <div id="outstandingSection" class="outstanding-section" style="display: none;">
+                    <div class="outstanding-card">
+                        <h3>Outstanding Summary</h3>
+                        <div class="outstanding-row">
+                            <div class="outstanding-item">
+                                <label>INV Outstanding</label>
+                                <div id="invOutstandingList" class="outstanding-list"></div>
+                                <div class="outstanding-subtotal">Subtotal: <span id="subtotalInv">-</span></div>
+                            </div>
+                            <div class="outstanding-item">
+                                <label>SA Outstanding</label>
+                                <div id="saOutstandingList" class="outstanding-list"></div>
+                                <div class="outstanding-subtotal">Subtotal: <span id="subtotalSa">-</span></div>
+                            </div>
+                        </div>
+                        <div class="outstanding-total">
+                            <strong>Total Outstanding: <span id="totalOutstanding">-</span></strong>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Hectare Serviced -->
                 <div class="form-group required">
                     <label for="hectare">Hectare Serviced</label>
@@ -481,6 +625,38 @@
                     >
                     <p class="helper-text">Planned or actual harvest date</p>
                     <div class="error-message" id="harvestDateError"></div>
+                </div>
+
+                <!-- Farmer Document -->
+                <div class="form-group required">
+                    <label for="farmerDocs">Farmer Document (Contract/ID)</label>
+                    <input
+                        type="file"
+                        id="farmerDocs"
+                        name="farmerDocs"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        required
+                    >
+                    <p class="helper-text">Scanned contract or farmer ID (multiple files allowed)</p>
+                    <div id="farmerFilesList" class="file-list"></div>
+                    <div class="error-message" id="farmerDocsError"></div>
+                </div>
+
+                <!-- PB Document -->
+                <div class="form-group required">
+                    <label for="pbDocs">Paddy Buyer Document (Contract/ID)</label>
+                    <input
+                        type="file"
+                        id="pbDocs"
+                        name="pbDocs"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        required
+                    >
+                    <p class="helper-text">Scanned contract or PB ID (multiple files allowed)</p>
+                    <div id="pbFilesList" class="file-list"></div>
+                    <div class="error-message" id="pbDocsError"></div>
                 </div>
 
                 <!-- Buttons -->
@@ -604,6 +780,15 @@
                 showDropdown('paddyBuyer', state.paddyBuyers);
             });
 
+            // File input listeners
+            document.getElementById('farmerDocs').addEventListener('change', (e) => {
+                displayFileList('farmerFilesList', e.target.files);
+            });
+
+            document.getElementById('pbDocs').addEventListener('change', (e) => {
+                displayFileList('pbFilesList', e.target.files);
+            });
+
             // Form submission
             document.getElementById('harvesterForm').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -649,7 +834,7 @@
         }
 
         // Select item from dropdown
-        function selectItem(fieldId, displayValue, id) {
+        async function selectItem(fieldId, displayValue, id) {
             const input = document.getElementById(`${fieldId}Input`);
             const hidden = document.getElementById(fieldId);
 
@@ -668,6 +853,9 @@
                 state.selectedFarmerGroup = id || displayValue;
                 clearField('farmer');
                 clearField('paddyBuyer');
+            } else if (fieldId === 'farmer') {
+                // Fetch outstanding data for selected farmer
+                await loadOutstandingData(displayValue);
             }
 
             // Clear error on selection
@@ -719,6 +907,45 @@
             });
         }
 
+        // Load outstanding data for farmer
+        async function loadOutstandingData(farmerName) {
+            try {
+                const url = APPS_SCRIPT_URL + '?type=outstanding&farmerName=' + encodeURIComponent(farmerName);
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.log('No outstanding data found for farmer:', farmerName);
+                    document.getElementById('outstandingSection').style.display = 'none';
+                    return;
+                }
+
+                // Update outstanding display
+                document.getElementById('invOutstandingList').textContent = data.invOutstandingList || '-';
+                document.getElementById('subtotalInv').textContent = formatCurrency(data.subtotalInvOutstanding);
+                document.getElementById('saOutstandingList').textContent = data.saOutstandingList || '-';
+                document.getElementById('subtotalSa').textContent = formatCurrency(data.subtotalSaOutstanding);
+                document.getElementById('totalOutstanding').textContent = formatCurrency(data.totalOutstanding);
+
+                // Show section
+                document.getElementById('outstandingSection').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading outstanding data:', error);
+                document.getElementById('outstandingSection').style.display = 'none';
+            }
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            if (!value) return '-';
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
         // Validate form
         function validateForm() {
             const errors = {};
@@ -744,6 +971,12 @@
             if (!document.getElementById('harvestDate').value) {
                 errors.harvestDate = 'Harvest Date is required';
             }
+            if (!document.getElementById('farmerDocs').files || document.getElementById('farmerDocs').files.length === 0) {
+                errors.farmerDocs = 'Farmer document is required';
+            }
+            if (!document.getElementById('pbDocs').files || document.getElementById('pbDocs').files.length === 0) {
+                errors.pbDocs = 'Paddy Buyer document is required';
+            }
 
             // Display errors
             Object.keys(errors).forEach(field => {
@@ -768,21 +1001,34 @@
                 return;
             }
 
-            const formData = {
-                timestamp: new Date().toISOString(),
-                agronomist: document.getElementById('agronomistInput').value,
-                farmerGroup: document.getElementById('farmerGroupInput').value,
-                farmer: document.getElementById('farmerInput').value,
-                hectare: parseFloat(document.getElementById('hectare').value),
-                paddyBuyer: document.getElementById('paddyBuyerInput').value,
-                quotation: document.getElementById('quotation').value,
-                harvestDate: document.getElementById('harvestDate').value
-            };
-
             try {
                 document.getElementById('submitBtn').disabled = true;
+                showToast('Uploading files...', 'success');
 
-                // Send to GSheet
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('timestamp', new Date().toISOString());
+                formData.append('agronomist', document.getElementById('agronomistInput').value);
+                formData.append('farmerGroup', document.getElementById('farmerGroupInput').value);
+                formData.append('farmer', document.getElementById('farmerInput').value);
+                formData.append('hectare', parseFloat(document.getElementById('hectare').value));
+                formData.append('paddyBuyer', document.getElementById('paddyBuyerInput').value);
+                formData.append('quotation', document.getElementById('quotation').value);
+                formData.append('harvestDate', document.getElementById('harvestDate').value);
+
+                // Add farmer documents
+                const farmerDocs = document.getElementById('farmerDocs').files;
+                for (let i = 0; i < farmerDocs.length; i++) {
+                    formData.append('farmerDocs', farmerDocs[i]);
+                }
+
+                // Add PB documents
+                const pbDocs = document.getElementById('pbDocs').files;
+                for (let i = 0; i < pbDocs.length; i++) {
+                    formData.append('pbDocs', pbDocs[i]);
+                }
+
+                // Send to GSheet with files
                 await submitToGSheet(formData);
 
                 // Show success toast
@@ -791,6 +1037,8 @@
                 // Clear form after brief delay to show confirmation
                 setTimeout(() => {
                     document.getElementById('harvesterForm').reset();
+                    document.getElementById('farmerFilesList').innerHTML = '';
+                    document.getElementById('pbFilesList').innerHTML = '';
                     document.getElementById('submitBtn').disabled = false;
                 }, 1500);
             } catch (error) {
@@ -800,32 +1048,20 @@
             }
         }
 
-        // Submit to GSheet via GET (no CORS issues)
-        async function submitToGSheet(data) {
+        // Submit to GSheet with file uploads
+        async function submitToGSheet(formData) {
             try {
-                // Build URL with form data as query parameters
-                const params = new URLSearchParams({
-                    submit: 'true',
-                    timestamp: data.timestamp,
-                    quotation: data.quotation,
-                    agronomist: data.agronomist,
-                    farmer: data.farmer,
-                    farmerGroup: data.farmerGroup,
-                    paddyBuyer: data.paddyBuyer,
-                    harvestDate: data.harvestDate,
-                    hectare: data.hectare
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
                 });
 
-                const url = APPS_SCRIPT_URL + '?' + params.toString();
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Submission failed');
+                }
 
-                // Use image tag to make GET request (bypasses CORS completely)
-                const img = new Image();
-                img.src = url;
-
-                // Wait for request to complete
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                return Promise.resolve();
+                return result;
             } catch (error) {
                 throw new Error(`Failed to submit: ${error.message}`);
             }
@@ -847,6 +1083,28 @@
             setTimeout(() => {
                 document.getElementById('statusMessage').style.display = 'none';
             }, delay);
+        }
+
+        // Display selected file list
+        function displayFileList(containerId, files) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                fileItem.innerHTML = `
+                    <span class="file-item-name">${file.name}</span>
+                    <span class="file-item-size">${sizeMB} MB</span>
+                `;
+
+                container.appendChild(fileItem);
+            }
         }
 
         // Show toast notification
