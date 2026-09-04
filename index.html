@@ -686,20 +686,29 @@
             setupEventListeners();
         });
 
-        // Fetch data from GSheet
+        // Fetch data from GSheet (using JSONP workaround for GET requests)
         async function fetchSheetData(type) {
             console.log('📥 Fetching data for type:', type);
             try {
-                const url = APPS_SCRIPT_URL + '?type=' + type;
-                console.log('🔗 URL:', url);
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonp_' + Date.now();
+                    const url = APPS_SCRIPT_URL + '?type=' + type + '&callback=' + callbackName;
 
-                const response = await fetch(url);
-                console.log('📊 Response status:', response.status);
+                    window[callbackName] = function(data) {
+                        console.log('✅ Result:', data);
+                        delete window[callbackName];
+                        resolve(data.values || []);
+                    };
 
-                const result = await response.json();
-                console.log('✅ Result:', result);
-
-                return result.values || [];
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.onerror = function() {
+                        console.error('❌ Script load error');
+                        delete window[callbackName];
+                        resolve([]);
+                    };
+                    document.head.appendChild(script);
+                });
             } catch (error) {
                 console.error('❌ Fetch error:', error);
                 return [];
@@ -910,25 +919,42 @@
         // Load outstanding data for farmer
         async function loadOutstandingData(farmerName) {
             try {
-                const url = APPS_SCRIPT_URL + '?type=outstanding&farmerName=' + encodeURIComponent(farmerName);
-                const response = await fetch(url);
-                const data = await response.json();
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonp_outstanding_' + Date.now();
+                    const url = APPS_SCRIPT_URL + '?type=outstanding&farmerName=' + encodeURIComponent(farmerName) + '&callback=' + callbackName;
 
-                if (data.error) {
-                    console.log('No outstanding data found for farmer:', farmerName);
-                    document.getElementById('outstandingSection').style.display = 'none';
-                    return;
-                }
+                    window[callbackName] = function(data) {
+                        delete window[callbackName];
 
-                // Update outstanding display
-                document.getElementById('invOutstandingList').textContent = data.invOutstandingList || '-';
-                document.getElementById('subtotalInv').textContent = formatCurrency(data.subtotalInvOutstanding);
-                document.getElementById('saOutstandingList').textContent = data.saOutstandingList || '-';
-                document.getElementById('subtotalSa').textContent = formatCurrency(data.subtotalSaOutstanding);
-                document.getElementById('totalOutstanding').textContent = formatCurrency(data.totalOutstanding);
+                        if (data.error) {
+                            console.log('No outstanding data found for farmer:', farmerName);
+                            document.getElementById('outstandingSection').style.display = 'none';
+                            resolve();
+                            return;
+                        }
 
-                // Show section
-                document.getElementById('outstandingSection').style.display = 'block';
+                        // Update outstanding display
+                        document.getElementById('invOutstandingList').textContent = data.invOutstandingList || '-';
+                        document.getElementById('subtotalInv').textContent = formatCurrency(data.subtotalInvOutstanding);
+                        document.getElementById('saOutstandingList').textContent = data.saOutstandingList || '-';
+                        document.getElementById('subtotalSa').textContent = formatCurrency(data.subtotalSaOutstanding);
+                        document.getElementById('totalOutstanding').textContent = formatCurrency(data.totalOutstanding);
+
+                        // Show section
+                        document.getElementById('outstandingSection').style.display = 'block';
+                        resolve();
+                    };
+
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.onerror = function() {
+                        console.error('Error loading outstanding data');
+                        delete window[callbackName];
+                        document.getElementById('outstandingSection').style.display = 'none';
+                        resolve();
+                    };
+                    document.head.appendChild(script);
+                });
             } catch (error) {
                 console.error('Error loading outstanding data:', error);
                 document.getElementById('outstandingSection').style.display = 'none';
