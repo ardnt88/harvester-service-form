@@ -1284,8 +1284,9 @@
                     }
                 }
 
-                // Submit batch POST
-                const response = await fetch(APPS_SCRIPT_URL, {
+                // Submit batch POST (use /usercallable for POST, /exec is for GET only)
+                const postUrl = APPS_SCRIPT_URL.replace('/exec', '/usercallable');
+                const response = await fetch(postUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
