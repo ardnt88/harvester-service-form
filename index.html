@@ -1263,10 +1263,17 @@
                 const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d'; // ← REPLACE WITH YOUR TOKEN
 
                 // Helper function to convert currency string to number
+                // Handles formats like: "7.560.000" or "7,560,000" or 7560000
                 const toNumber = (val) => {
                     if (!val) return 0;
                     if (typeof val === 'number') return val;
-                    return parseFloat(String(val).replace(/[^\d.-]/g, '')) || 0;
+                    let str = String(val).trim();
+                    // Remove dots (used as thousands separator in some formats)
+                    str = str.replace(/\./g, '');
+                    // Remove commas and other non-numeric chars except decimal point
+                    str = str.replace(/,/g, '');
+                    const num = parseFloat(str);
+                    return isNaN(num) ? 0 : num;
                 };
 
                 // Prepare records for Airtable
