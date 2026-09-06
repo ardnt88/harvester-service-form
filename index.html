@@ -648,6 +648,8 @@
                                 <th>QT</th>
                                 <th>Harvest Date</th>
                                 <th>Hectares</th>
+                                <th>INV Outstanding</th>
+                                <th>SA Outstanding</th>
                                 <th>Outstanding</th>
                                 <th style="width: 200px;">Actions</th>
                             </tr>
@@ -1112,10 +1114,26 @@
                     <td>${farmer.harvestDate}</td>
                     <td>${farmer.hectare}</td>
                     <td>
+                        <div style="font-size: 12px; line-height: 1.4;">
+                            <div><strong>Amount:</strong> ${farmer.invOutstandingAmount}</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px; max-width: 200px; overflow-y: auto; max-height: 80px;">
+                                <strong>Invoices:</strong> ${farmer.invOutstandingList || 'N/A'}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 12px; line-height: 1.4;">
+                            <div><strong>Amount:</strong> ${farmer.saOutstandingAmount}</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px; max-width: 200px; overflow-y: auto; max-height: 80px;">
+                                <strong>Invoices:</strong> ${farmer.saOutstandingList || 'N/A'}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
                         <div style="font-size: 12px; line-height: 1.6;">
-                            <div><strong>INV:</strong> ${farmer.invOutstandingAmount}</div>
-                            <div><strong>SA:</strong> ${farmer.saOutstandingAmount}</div>
-                            <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #e0e0e0;"><strong>Total:</strong> ${farmer.totalOutstanding}</div>
+                            <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; font-weight: 600; text-align: center;">
+                                ${farmer.totalOutstanding}
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -1153,8 +1171,19 @@
             // Update summary
             const totalFarmers = state.farmerBatch.length;
             const totalHectares = state.farmerBatch.reduce((sum, f) => sum + f.hectare, 0).toFixed(2);
+            const totalOutstanding = state.farmerBatch.reduce((sum, f) => {
+              const amount = parseFloat(String(f.totalOutstanding).replace(/[^0-9.-]/g, '')) || 0;
+              return sum + amount;
+            }, 0);
+            const formattedOutstanding = new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              minimumFractionDigits: 0
+            }).format(totalOutstanding);
+            
             document.getElementById('summaryFarmerCount').textContent = totalFarmers;
             document.getElementById('summaryTotalHectares').textContent = totalHectares;
+            document.getElementById('summaryTotalOutstanding').textContent = formattedOutstanding;
         }
 
         function editFarmer(index) {
