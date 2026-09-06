@@ -1260,24 +1260,31 @@
             try {
                 const AIRTABLE_BASE_ID = 'appBKZ02tJMQxqmTG';
                 const AIRTABLE_TABLE_ID = 'tblQocNNwyQkaiVSK';
-                const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d';
+                const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d'; // ← REPLACE WITH YOUR TOKEN
+
+                // Helper function to convert currency string to number
+                const toNumber = (val) => {
+                    if (!val) return 0;
+                    if (typeof val === 'number') return val;
+                    return parseFloat(String(val).replace(/[^\d.-]/g, '')) || 0;
+                };
 
                 // Prepare records for Airtable
                 const records = state.farmerBatch.map(f => ({
                     fields: {
-                        'Farmer': f.farmer,
+                        'Farmer': f.farmer || '',
                         'Timestamp': new Date().toISOString(),
-                        'Quotation': f.quotation,
-                        'Agronomist': f.agronomist,
-                        'Farmer Group': f.farmerGroup,
-                        'Paddy Buyer': f.paddyBuyer,
-                        'Harvest Date': f.harvestDate,
-                        'Hectare': parseFloat(f.hectare),
+                        'Quotation': f.quotation || '',
+                        'Agronomist': f.agronomist || '',
+                        'Farmer Group': f.farmerGroup || '',
+                        'Paddy Buyer': f.paddyBuyer || '',
+                        'Harvest Date': f.harvestDate || '',
+                        'Hectare': toNumber(f.hectare),
                         'INV Outstanding List': f.invOutstandingList || '',
-                        'INV Outstanding Amount': parseFloat(f.invOutstandingAmount) || 0,
+                        'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
                         'SA Outstanding List': f.saOutstandingList || '',
-                        'SA Outstanding Amount': parseFloat(f.saOutstandingAmount) || 0,
-                        'Total Outstanding': parseFloat(f.totalOutstanding) || 0,
+                        'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
+                        'Total Outstanding': toNumber(f.totalOutstanding),
                         'ACK File Link': f.ackFile?.link || ''
                     }
                 }));
