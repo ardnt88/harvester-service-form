@@ -710,7 +710,7 @@
             currentStep: 1
         };
 
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZC_HDUmrG6NcMnKZbATmXgvHpWhzSH1KMYRVpfJDml5zGGPXZg5-cqXpQdXf5cVqIRQ/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJdEdUsL5wHErnx3DvR4ELL_Udj2MZwNOeSF4OYl4zvVw7pDGG5x_QaDwi090obWewuw/exec';
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
@@ -1284,9 +1284,8 @@
                     }
                 }
 
-                // Submit batch POST (use /usercallable for POST, /exec is for GET only)
-                const postUrl = APPS_SCRIPT_URL.replace('/exec', '/usercallable');
-                const response = await fetch(postUrl, {
+                // Submit batch POST
+                const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
