@@ -710,9 +710,10 @@
             currentStep: 1
         };
 
-        // ===== AIRTABLE CONFIGURATION =====
-        // No longer using Apps Script for submissions — using Airtable instead
-        // Apps Script URL removed (dropdowns still work via GET if needed)
+        // ===== CONFIGURATION =====
+        // Apps Script for GET requests (loading dropdowns)
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJdEdUsL5wHErnx3DvR4ELL_Udj2MZwNOeSF4OYl4zvVw7pDGG5x_QaDwi090obWewuw/exec';
+        // Airtable for POST (data submission handled in submitAllData function)
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
