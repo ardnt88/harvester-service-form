@@ -1255,30 +1255,70 @@
             document.getElementById('finalSubmitBtn').disabled = true;
 
             try {
-                for (let farmer of state.farmerBatch) {
-                    const params = new URLSearchParams({
-                        submit: 'true',
-                        timestamp: new Date().toISOString(),
-                        quotation: farmer.quotation,
-                        agronomist: farmer.agronomist,
-                        farmer: farmer.farmer,
-                        farmerGroup: farmer.farmerGroup,
-                        paddyBuyer: farmer.paddyBuyer,
-                        harvestDate: farmer.harvestDate,
-                        hectare: farmer.hectare
-                    });
-                    const url = APPS_SCRIPT_URL + '?' + params.toString();
-                    const img = new Image();
-                    img.src = url;
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                // Prepare batch payload
+                const batchPayload = state.farmerBatch.map(f => ({
+                    timestamp: new Date().toISOString(),
+                    quotation: f.quotation,
+                    agronomist: f.agronomist,
+                    farmer: f.farmer,
+                    farmerId: f.farmerId || '',
+                    farmerGroup: f.farmerGroup,
+                    paddyBuyer: f.paddyBuyer,
+                    paddyBuyerId: f.paddyBuyerId || '',
+                    harvestDate: f.harvestDate,
+                    hectare: f.hectare,
+                    invOutstandingList: f.invOutstandingList || '',
+                    invOutstandingAmount: f.invOutstandingAmount || '',
+                    saOutstandingList: f.saOutstandingList || '',
+                    saOutstandingAmount: f.saOutstandingAmount || '',
+                    totalOutstanding: f.totalOutstanding || ''
+                }));
+
+                // Prepare ACK files
+                const ackFiles = {};
+                for (let i = 0; i < state.farmerBatch.length; i++) {
+                    const farmer = state.farmerBatch[i];
+                    if (farmer.ackFile) {
+                        const farmerKey = farmer.farmer + '_' + farmer.quotation;
+                        ackFiles[farmerKey] = farmer.ackFile;
+                    }
                 }
 
-                showToast(`Successfully submitted ${state.farmerBatch.length} farmer requests`, 'success');
+                // Submit batch POST
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        batch: batchPayload,
+                        ackFiles: ackFiles
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showToast('Submission rejected: ' + result.error, 'error');
+                    document.getElementById('finalSubmitBtn').disabled = false;
+                    return;
+                }
+
+                // Success
+                showToast(
+                    'Submitted ' + result.rowsAppended + ' farmers. ACK files: ' + result.ackLinksCreated,
+                    'success'
+                );
+
                 setTimeout(() => {
                     location.reload();
                 }, 2000);
+
             } catch (error) {
-                showToast(`Error submitting data: ${error.message}`, 'error');
+                showToast('Submission failed: ' + error.message, 'error');
+                console.log('Submit error:', error);
                 document.getElementById('finalSubmitBtn').disabled = false;
             }
         }
