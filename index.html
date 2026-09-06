@@ -710,7 +710,9 @@
             currentStep: 1
         };
 
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJdEdUsL5wHErnx3DvR4ELL_Udj2MZwNOeSF4OYl4zvVw7pDGG5x_QaDwi090obWewuw/usercallable';
+        // ===== AIRTABLE CONFIGURATION =====
+        // No longer using Apps Script for submissions — using Airtable instead
+        // Apps Script URL removed (dropdowns still work via GET if needed)
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
@@ -1255,62 +1257,49 @@
             document.getElementById('finalSubmitBtn').disabled = true;
 
             try {
-                // Prepare batch payload
-                const batchPayload = state.farmerBatch.map(f => ({
-                    timestamp: new Date().toISOString(),
-                    quotation: f.quotation,
-                    agronomist: f.agronomist,
-                    farmer: f.farmer,
-                    farmerId: f.farmerId || '',
-                    farmerGroup: f.farmerGroup,
-                    paddyBuyer: f.paddyBuyer,
-                    paddyBuyerId: f.paddyBuyerId || '',
-                    harvestDate: f.harvestDate,
-                    hectare: f.hectare,
-                    invOutstandingList: f.invOutstandingList || '',
-                    invOutstandingAmount: f.invOutstandingAmount || '',
-                    saOutstandingList: f.saOutstandingList || '',
-                    saOutstandingAmount: f.saOutstandingAmount || '',
-                    totalOutstanding: f.totalOutstanding || ''
+                const AIRTABLE_BASE_ID = 'appBKZ02tJMQxqmTG';
+                const AIRTABLE_TABLE_ID = 'tblQocNNwyQkaiVSK';
+                const AIRTABLE_TOKEN = 'patYOUR_TOKEN_HERE'; // ← REPLACE WITH YOUR TOKEN
+
+                // Prepare records for Airtable
+                const records = state.farmerBatch.map(f => ({
+                    fields: {
+                        'Farmer': f.farmer,
+                        'Timestamp': new Date().toISOString(),
+                        'Quotation': f.quotation,
+                        'Agronomist': f.agronomist,
+                        'Farmer Group': f.farmerGroup,
+                        'Paddy Buyer': f.paddyBuyer,
+                        'Harvest Date': f.harvestDate,
+                        'Hectare': parseFloat(f.hectare),
+                        'INV Outstanding List': f.invOutstandingList || '',
+                        'INV Outstanding Amount': parseFloat(f.invOutstandingAmount) || 0,
+                        'SA Outstanding List': f.saOutstandingList || '',
+                        'SA Outstanding Amount': parseFloat(f.saOutstandingAmount) || 0,
+                        'Total Outstanding': parseFloat(f.totalOutstanding) || 0,
+                        'ACK File Link': f.ackFile?.link || ''
+                    }
                 }));
 
-                // Prepare ACK files
-                const ackFiles = {};
-                for (let i = 0; i < state.farmerBatch.length; i++) {
-                    const farmer = state.farmerBatch[i];
-                    if (farmer.ackFile) {
-                        const farmerKey = farmer.farmer + '_' + farmer.quotation;
-                        ackFiles[farmerKey] = farmer.ackFile;
+                // Send to Airtable
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ records: records })
                     }
-                }
-
-                // Submit batch POST
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        batch: batchPayload,
-                        ackFiles: ackFiles
-                    })
-                });
+                );
 
                 if (!response.ok) {
-                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    throw new Error('HTTP ' + response.status);
                 }
 
                 const result = await response.json();
-
-                if (!result.success) {
-                    showToast('Submission rejected: ' + result.error, 'error');
-                    document.getElementById('finalSubmitBtn').disabled = false;
-                    return;
-                }
-
-                // Success
-                showToast(
-                    'Submitted ' + result.rowsAppended + ' farmers. ACK files: ' + result.ackLinksCreated,
-                    'success'
-                );
+                showToast(`✅ Submitted ${result.records.length} farmers to Airtable`, 'success');
 
                 setTimeout(() => {
                     location.reload();
