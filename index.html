@@ -676,16 +676,6 @@
                     </div>
                 </div>
 
-                <!-- SUMMARY SECTION -->
-                <div style="margin-top: 24px; padding: 16px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <strong>Summary</strong>
-                    <div style="margin-top: 12px; font-size: 14px; line-height: 1.6;">
-                        <div>Total Farmers: <strong id="summaryFarmerCount">0</strong></div>
-                        <div>Total Hectares: <strong id="summaryTotalHectares">0</strong></div>
-                        <div>Total Outstanding: <strong id="summaryTotalOutstanding">-</strong></div>
-                    </div>
-                </div>
-
                 <!-- NAVIGATION BUTTONS -->
                 <div class="button-group" style="margin-top: 32px;">
                     <button type="button" class="btn-secondary" onclick="goToStep(2)">← Back</button>
@@ -1277,24 +1267,27 @@
                 };
 
                 // Prepare records for Airtable
-                const records = state.farmerBatch.map(f => ({
-                    fields: {
-                        'Farmer': f.farmer || '',
-                        'Timestamp': new Date().toISOString(),
-                        'Quotation': f.quotation || '',
-                        'Agronomist': f.agronomist || '',
-                        'Farmer Group': f.farmerGroup || '',
-                        'Paddy Buyer': f.paddyBuyer || '',
-                        'Harvest Date': f.harvestDate || '',
-                        'Hectare': toNumber(f.hectare),
-                        'INV Outstanding List': f.invOutstandingList || '',
-                        'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
-                        'SA Outstanding List': f.saOutstandingList || '',
-                        'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
-                        'Total Outstanding': toNumber(f.totalOutstanding),
-                        'ACK File Link': f.ackFile?.link || ''
-                    }
-                }));
+                const records = state.farmerBatch.map(f => {
+                    console.log('Farmer:', f.farmer, 'INV Amount:', f.invOutstandingAmount, 'Type:', typeof f.invOutstandingAmount);
+                    return {
+                        fields: {
+                            'Farmer': f.farmer || '',
+                            'Timestamp': new Date().toISOString(),
+                            'Quotation': f.quotation || '',
+                            'Agronomist': f.agronomist || '',
+                            'Farmer Group': f.farmerGroup || '',
+                            'Paddy Buyer': f.paddyBuyer || '',
+                            'Harvest Date': f.harvestDate || '',
+                            'Hectare': toNumber(f.hectare),
+                            'INV Outstanding List': f.invOutstandingList || '',
+                            'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
+                            'SA Outstanding List': f.saOutstandingList || '',
+                            'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
+                            'Total Outstanding': toNumber(f.totalOutstanding),
+                            'ACK File Link': f.ackFile?.link || ''
+                        }
+                    };
+                });
 
                 // Send to Airtable
                 const response = await fetch(
