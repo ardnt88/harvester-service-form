@@ -608,11 +608,11 @@
                             <div class="error-message" id="farmerError"></div>
                         </div>
 
-                        <!-- LP HECTARE INFO SECTION (NEW) -->
-                        <div id="lpInfoSection" class="lp-info-section">
+                        <!-- LP HECTARE INFO SECTION (ALWAYS VISIBLE) -->
+                        <div id="lpInfoSection" class="lp-info-section show">
                             <h3>📍 Land Parcel Information</h3>
                             <div class="lp-info-content">
-                                <div id="lpDetails" style="margin-bottom: 8px; font-size: 13px; line-height: 1.6;"></div>
+                                <div id="lpDetails" style="margin-bottom: 8px; font-size: 13px; line-height: 1.6;">Select a farmer to view available land parcels</div>
                                 <div class="lp-total">Total Active LP Hectares: <span id="lpTotalHectares">-</span></div>
                             </div>
                         </div>
@@ -1012,7 +1012,8 @@
                 clearField('farmer');
             } else if (fieldId === 'farmer') {
                 document.getElementById('outstandingSection').style.display = 'none';
-                document.getElementById('lpInfoSection').classList.remove('show');
+                document.getElementById('lpDetails').textContent = 'Select a farmer to view available land parcels';
+                document.getElementById('lpTotalHectares').textContent = '-';
             }
         }
 
@@ -1034,28 +1035,26 @@
             return filtered.map(row => [row[4], row[5]]);
         }
 
-        // NEW: Display LP Info for selected farmer
+        // NEW: Display LP Info for selected farmer (ALWAYS VISIBLE)
         function displayLPInfo(farmerId) {
-            const lpSection = document.getElementById('lpInfoSection');
             const lpDetailsDiv = document.getElementById('lpDetails');
             const lpTotalDiv = document.getElementById('lpTotalHectares');
             
             const totalLPHectares = state.farmerLPMap[farmerId] || 0;
             
             if (totalLPHectares === 0) {
-                lpSection.classList.remove('show');
-                return;
+                lpDetailsDiv.textContent = '⚠️ No active land parcels found for this farmer';
+                lpTotalDiv.textContent = '0.00';
+            } else {
+                // Get all LPs for this farmer
+                const farmerLPs = state.masterData.filter(row => row[5] === farmerId);
+                const lpList = farmerLPs.map(row => `<div>• ${row[6]} (${row[8]} ha)</div>`).join('');
+                
+                lpDetailsDiv.innerHTML = lpList;
+                lpTotalDiv.textContent = totalLPHectares.toFixed(2);
             }
             
-            // Get all LPs for this farmer
-            const farmerLPs = state.masterData.filter(row => row[5] === farmerId);
-            const lpList = farmerLPs.map(row => `<div>• ${row[6]} (${row[8]} ha)</div>`).join('');
-            
-            lpDetailsDiv.innerHTML = lpList;
-            lpTotalDiv.textContent = totalLPHectares.toFixed(2);
-            lpSection.classList.add('show');
-            
-            // Update helper text
+            // Update helper text on hectare field
             const helperText = document.getElementById('hectareHelperText');
             helperText.textContent = `Land area to be harvested (max: ${totalLPHectares.toFixed(2)} ha available)`;
         }
@@ -1275,6 +1274,9 @@
             document.getElementById('harvestDate').value = farmer.harvestDate;
             document.getElementById('hectare').value = farmer.hectare;
             
+            // Clear LP display first, then update with edit data
+            document.getElementById('lpDetails').textContent = 'Loading...';
+            document.getElementById('lpTotalHectares').textContent = '-';
             displayLPInfo(farmer.farmerId);
             
             state.farmerBatch.splice(index, 1);
