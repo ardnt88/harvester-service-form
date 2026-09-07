@@ -257,6 +257,38 @@
             font-size: 16px;
             font-weight: 700;
         }
+        .lp-info-section {
+            margin: 20px 0;
+            padding: 16px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 6px;
+            display: none;
+        }
+        .lp-info-section.show {
+            display: block;
+        }
+        .lp-info-section h3 {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2e7d32;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .lp-info-content {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .lp-total {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #a5d6a7;
+        }
         .file-upload-section {
             margin: 20px 0;
             padding: 16px;
@@ -575,6 +607,16 @@
                             <p class="helper-text">Only farmers in selected farmer group</p>
                             <div class="error-message" id="farmerError"></div>
                         </div>
+
+                        <!-- LP HECTARE INFO SECTION (NEW) -->
+                        <div id="lpInfoSection" class="lp-info-section">
+                            <h3>📍 Land Parcel Information</h3>
+                            <div class="lp-info-content">
+                                <div id="lpDetails" style="margin-bottom: 8px; font-size: 13px; line-height: 1.6;"></div>
+                                <div class="lp-total">Total Active LP Hectares: <span id="lpTotalHectares">-</span></div>
+                            </div>
+                        </div>
+
                         <div id="outstandingSection" class="outstanding-section" style="display: none;">
                             <h3>Outstanding Summary</h3>
                             <div class="outstanding-row">
@@ -608,7 +650,7 @@
                         <div class="form-group required">
                             <label for="hectare">Hectare Serviced</label>
                             <input type="number" id="hectare" name="hectare" placeholder="e.g., 2.5" min="0" step="0.01">
-                            <p class="helper-text">Land area to be harvested (in hectares)</p>
+                            <p class="helper-text" id="hectareHelperText">Land area to be harvested (in hectares)</p>
                             <div class="error-message" id="hectareError"></div>
                         </div>
                     </form>
@@ -648,6 +690,7 @@
                                 <th>QT</th>
                                 <th>Harvest Date</th>
                                 <th>Hectares</th>
+                                <th>LP Hectares</th>
                                 <th>INV Outstanding</th>
                                 <th>SA Outstanding</th>
                                 <th>Outstanding</th>
@@ -696,14 +739,13 @@
             selectedFarmerGroupName: null,
             selectedPaddyBuyer: null,
             selectedPaddyBuyerName: null,
-            farmerBatch: [], // Array of farmer records to submit
-            currentStep: 1
+            farmerBatch: [],
+            currentStep: 1,
+            farmerLPMap: {} // NEW: farmer_id -> total_lp_hectares mapping
         };
 
         // ===== CONFIGURATION =====
-        // Apps Script for GET requests (loading dropdowns)
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJdEdUsL5wHErnx3DvR4ELL_Udj2MZwNOeSF4OYl4zvVw7pDGG5x_QaDwi090obWewuw/exec';
-        // Airtable for POST (data submission handled in submitAllData function)
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
@@ -732,15 +774,33 @@
                 const paddyBuyers = await fetchSheetData('pb');
                 state.masterData = masterData || [];
                 state.paddyBuyers = paddyBuyers || [];
+                
+                // NEW: Aggregate LP hectares by farmer_id
+                aggregateFarmerLPHectares();
+                
                 showToast('Data loaded successfully', 'info');
             } catch (error) {
                 showToast(`Error loading data: ${error.message}`, 'error');
             }
         }
 
+        // NEW: Aggregate LP hectares from masterData
+        function aggregateFarmerLPHectares() {
+            state.farmerLPMap = {};
+            state.masterData.forEach(row => {
+                // row[5] = farmer_id, row[8] = land_parcel_area_ha
+                const farmerId = row[5];
+                const lpHectares = parseFloat(row[8]) || 0;
+                
+                if (!state.farmerLPMap[farmerId]) {
+                    state.farmerLPMap[farmerId] = 0;
+                }
+                state.farmerLPMap[farmerId] += lpHectares;
+            });
+        }
+
         // ========== STEP NAVIGATION ==========
         function goToStep(stepNum) {
-            // Clear errors
             document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
 
@@ -824,6 +884,10 @@
                 showDropdown('paddyBuyer', state.paddyBuyers);
             });
 
+            document.getElementById('hectare').addEventListener('input', (e) => {
+                validateHectareInput();
+            });
+
             document.getElementById('step3AckFile').addEventListener('change', (e) => {
                 handleFileUpload(e, 'ackFileList');
             });
@@ -858,7 +922,8 @@
                                 <div class="batch-item-details">
                                     <strong>QT:</strong> ${farmer.quotation} | 
                                     <strong>Date:</strong> ${farmer.harvestDate} | 
-                                    <strong>Hectares:</strong> ${farmer.hectare} ha
+                                    <strong>Hectares:</strong> ${farmer.hectare} ha |
+                                    <strong>LP Hectares:</strong> ${farmer.lpHectares} ha
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
@@ -920,6 +985,8 @@
                 state.selectedPaddyBuyer = id || displayValue;
                 state.selectedPaddyBuyerName = displayValue;
             } else if (fieldId === 'farmer') {
+                // NEW: Load LP info and outstanding data
+                displayLPInfo(id || displayValue);
                 await loadOutstandingData(displayValue);
             }
 
@@ -945,6 +1012,7 @@
                 clearField('farmer');
             } else if (fieldId === 'farmer') {
                 document.getElementById('outstandingSection').style.display = 'none';
+                document.getElementById('lpInfoSection').classList.remove('show');
             }
         }
 
@@ -964,6 +1032,58 @@
             if (!state.selectedFarmerGroup) return [];
             const filtered = state.masterData.filter(row => row[3] === state.selectedFarmerGroup);
             return filtered.map(row => [row[4], row[5]]);
+        }
+
+        // NEW: Display LP Info for selected farmer
+        function displayLPInfo(farmerId) {
+            const lpSection = document.getElementById('lpInfoSection');
+            const lpDetailsDiv = document.getElementById('lpDetails');
+            const lpTotalDiv = document.getElementById('lpTotalHectares');
+            
+            const totalLPHectares = state.farmerLPMap[farmerId] || 0;
+            
+            if (totalLPHectares === 0) {
+                lpSection.classList.remove('show');
+                return;
+            }
+            
+            // Get all LPs for this farmer
+            const farmerLPs = state.masterData.filter(row => row[5] === farmerId);
+            const lpList = farmerLPs.map(row => `<div>• ${row[6]} (${row[8]} ha)</div>`).join('');
+            
+            lpDetailsDiv.innerHTML = lpList;
+            lpTotalDiv.textContent = totalLPHectares.toFixed(2);
+            lpSection.classList.add('show');
+            
+            // Update helper text
+            const helperText = document.getElementById('hectareHelperText');
+            helperText.textContent = `Land area to be harvested (max: ${totalLPHectares.toFixed(2)} ha available)`;
+        }
+
+        // NEW: Validate hectare input against LP hectares
+        function validateHectareInput() {
+            const farmerId = document.getElementById('farmer').value;
+            const hectareInput = parseFloat(document.getElementById('hectare').value) || 0;
+            const hectareField = document.getElementById('hectare');
+            const hectareError = document.getElementById('hectareError');
+            const formGroup = hectareField.parentElement;
+            
+            if (!farmerId) {
+                hectareError.classList.remove('show');
+                formGroup.classList.remove('error');
+                return;
+            }
+            
+            const maxLPHectares = state.farmerLPMap[farmerId] || 0;
+            
+            if (hectareInput > maxLPHectares && hectareInput > 0) {
+                hectareError.textContent = `Hectare serviced (${hectareInput.toFixed(2)}) exceeds available LP hectares (${maxLPHectares.toFixed(2)})`;
+                hectareError.classList.add('show');
+                formGroup.classList.add('error');
+            } else {
+                hectareError.classList.remove('show');
+                formGroup.classList.remove('error');
+            }
         }
 
         // ========== OUTSTANDING DATA ==========
@@ -1028,6 +1148,14 @@
             if (!document.getElementById('hectare').value || parseFloat(document.getElementById('hectare').value) <= 0) 
                 errors.hectare = 'Valid hectare amount is required';
 
+            // NEW: Check hectare exceeds LP hectares
+            const farmerId = document.getElementById('farmer').value;
+            const hectareInput = parseFloat(document.getElementById('hectare').value) || 0;
+            const maxLPHectares = state.farmerLPMap[farmerId] || 0;
+            if (hectareInput > maxLPHectares && hectareInput > 0) {
+                errors.hectare = `Hectare serviced exceeds available LP hectares (${maxLPHectares.toFixed(2)})`;
+            }
+
             Object.keys(errors).forEach(field => {
                 const errorEl = document.getElementById(`${field}Error`);
                 if (!errorEl) return;
@@ -1045,17 +1173,18 @@
                 return;
             }
 
+            const farmerId = document.getElementById('farmer').value;
             const farmerRecord = {
                 agronomist: state.selectedAgronomistName,
                 farmerGroup: state.selectedFarmerGroupName,
                 farmer: document.getElementById('farmerInput').value,
-                farmerId: document.getElementById('farmer').value,
+                farmerId: farmerId,
                 quotation: document.getElementById('quotation').value,
                 harvestDate: document.getElementById('harvestDate').value,
                 hectare: parseFloat(document.getElementById('hectare').value),
+                lpHectares: state.farmerLPMap[farmerId] || 0,
                 paddyBuyer: state.selectedPaddyBuyerName,
                 paddyBuyerId: state.selectedPaddyBuyer,
-                // Outstanding data - capture all details
                 invOutstandingList: document.getElementById('invOutstandingList').textContent || '-',
                 invOutstandingAmount: document.getElementById('subtotalInv').textContent || '-',
                 saOutstandingList: document.getElementById('saOutstandingList').textContent || '-',
@@ -1066,16 +1195,15 @@
             state.farmerBatch.push(farmerRecord);
             showToast(`Farmer ${farmerRecord.farmer} added to batch`, 'success');
 
-            // Render updated list
             renderStep2FarmersList();
 
-            // Clear farmer-specific fields for next entry
             document.getElementById('farmerInput').value = '';
             document.getElementById('farmer').value = '';
             document.getElementById('quotation').value = '';
             document.getElementById('harvestDate').value = '';
             document.getElementById('hectare').value = '';
             document.getElementById('outstandingSection').style.display = 'none';
+            document.getElementById('lpInfoSection').classList.remove('show');
             document.getElementById('farmerInput').focus();
         }
 
@@ -1106,6 +1234,7 @@
                     <td>${farmer.quotation}</td>
                     <td>${farmer.harvestDate}</td>
                     <td>${farmer.hectare}</td>
+                    <td><strong style="color: #2e7d32;">${farmer.lpHectares.toFixed(2)}</strong></td>
                     <td>
                         <div style="font-size: 12px; line-height: 1.4;">
                             <div><strong>Amount:</strong> ${farmer.invOutstandingAmount}</div>
@@ -1135,59 +1264,19 @@
                         <button type="button" onclick="deleteFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                     </td>
                 </tr>
-                <tr style="background: #f9f9f9; display: none;" id="detailsRow${idx}">
-                    <td colspan="7" style="padding: 16px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div>
-                                <div style="font-size: 12px; color: #667eea; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">INV Outstanding Details</div>
-                                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 12px; line-height: 1.6; max-height: 150px; overflow-y: auto;">
-                                    ${farmer.invOutstandingList}
-                                </div>
-                                <div style="margin-top: 8px; font-size: 12px; color: #333;">
-                                    <strong>Subtotal INV:</strong> <span style="color: #667eea; font-weight: 700;">${farmer.invOutstandingAmount}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <div style="font-size: 12px; color: #667eea; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">SA Outstanding Details</div>
-                                <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0; font-size: 12px; line-height: 1.6; max-height: 150px; overflow-y: auto;">
-                                    ${farmer.saOutstandingList}
-                                </div>
-                                <div style="margin-top: 8px; font-size: 12px; color: #333;">
-                                    <strong>Subtotal SA:</strong> <span style="color: #667eea; font-weight: 700;">${farmer.saOutstandingAmount}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
             `).join('');
-
-            // Update summary
-            const totalFarmers = state.farmerBatch.length;
-            const totalHectares = state.farmerBatch.reduce((sum, f) => sum + f.hectare, 0).toFixed(2);
-            const totalOutstanding = state.farmerBatch.reduce((sum, f) => {
-              const amount = parseFloat(String(f.totalOutstanding).replace(/[^0-9.-]/g, '')) || 0;
-              return sum + amount;
-            }, 0);
-            const formattedOutstanding = new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-              minimumFractionDigits: 0
-            }).format(totalOutstanding);
-            
-            // Summary section removed - these updates are no longer needed
-            // (summary HTML was deleted as it wasn't useful)
         }
 
         function editFarmer(index) {
             const farmer = state.farmerBatch[index];
-            // Load farmer data into Step 2 form
             document.getElementById('farmerInput').value = farmer.farmer;
             document.getElementById('farmer').value = farmer.farmerId;
             document.getElementById('quotation').value = farmer.quotation;
             document.getElementById('harvestDate').value = farmer.harvestDate;
             document.getElementById('hectare').value = farmer.hectare;
             
-            // Remove from batch and go to Step 2
+            displayLPInfo(farmer.farmerId);
+            
             state.farmerBatch.splice(index, 1);
             renderStep2FarmersList();
             goToStep(2);
@@ -1249,27 +1338,20 @@
             try {
                 const AIRTABLE_BASE_ID = 'appBKZ02tJMQxqmTG';
                 const AIRTABLE_TABLE_ID = 'tblQocNNwyQkaiVSK';
-                const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d'; // ← REPLACE WITH YOUR TOKEN
+                const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d';
 
-                // Helper function to convert currency string to number
-                // Handles formats like: "Rp 2,043,220" or "7.560.000" or 7560000
                 const toNumber = (val) => {
                     if (!val) return 0;
                     if (typeof val === 'number') return val;
                     let str = String(val).trim();
-                    // Remove "Rp" prefix and spaces
                     str = str.replace(/Rp\s*/g, '');
-                    // Remove dots (thousands separator)
                     str = str.replace(/\./g, '');
-                    // Remove commas (thousands separator)
                     str = str.replace(/,/g, '');
                     const num = parseFloat(str);
                     return isNaN(num) ? 0 : num;
                 };
 
-                // Prepare records for Airtable
                 const records = state.farmerBatch.map(f => {
-                    console.log('Farmer:', f.farmer, 'INV Amount:', f.invOutstandingAmount, 'Type:', typeof f.invOutstandingAmount);
                     return {
                         fields: {
                             'Farmer': f.farmer || '',
@@ -1280,6 +1362,7 @@
                             'Paddy Buyer': f.paddyBuyer || '',
                             'Harvest Date': f.harvestDate || '',
                             'Hectare': toNumber(f.hectare),
+                            'LP Hectares': toNumber(f.lpHectares),
                             'INV Outstanding List': f.invOutstandingList || '',
                             'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
                             'SA Outstanding List': f.saOutstandingList || '',
@@ -1290,7 +1373,6 @@
                     };
                 });
 
-                // Send to Airtable
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
                     {
