@@ -1252,14 +1252,16 @@
                 const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d'; // ← REPLACE WITH YOUR TOKEN
 
                 // Helper function to convert currency string to number
-                // Handles formats like: "7.560.000" or "7,560,000" or 7560000
+                // Handles formats like: "Rp 2,043,220" or "7.560.000" or 7560000
                 const toNumber = (val) => {
                     if (!val) return 0;
                     if (typeof val === 'number') return val;
                     let str = String(val).trim();
-                    // Remove dots (used as thousands separator in some formats)
+                    // Remove "Rp" prefix and spaces
+                    str = str.replace(/Rp\s*/g, '');
+                    // Remove dots (thousands separator)
                     str = str.replace(/\./g, '');
-                    // Remove commas and other non-numeric chars except decimal point
+                    // Remove commas (thousands separator)
                     str = str.replace(/,/g, '');
                     const num = parseFloat(str);
                     return isNaN(num) ? 0 : num;
