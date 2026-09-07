@@ -1174,9 +1174,8 @@
               minimumFractionDigits: 0
             }).format(totalOutstanding);
             
-            document.getElementById('summaryFarmerCount').textContent = totalFarmers;
-            document.getElementById('summaryTotalHectares').textContent = totalHectares;
-            document.getElementById('summaryTotalOutstanding').textContent = formattedOutstanding;
+            // Summary section removed - these updates are no longer needed
+            // (summary HTML was deleted as it wasn't useful)
         }
 
         function editFarmer(index) {
