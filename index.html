@@ -596,6 +596,7 @@
                 <div style="background: #f9f9f9; padding: 24px; border-radius: 8px; border: 1px solid #e0e0e0;">
                     <h3 style="margin: 0 0 20px 0; font-size: 14px; font-weight: 600; color: #333;">Add New Farmer</h3>
                     <form id="step2Form">
+                        <!-- 1. FARMER NAME -->
                         <div class="form-group required relative-field">
                             <label for="farmer">Farmer Name</label>
                             <div class="search-input-wrapper">
@@ -608,50 +609,57 @@
                             <div class="error-message" id="farmerError"></div>
                         </div>
 
-                        <!-- LP HECTARE INFO SECTION (ALWAYS VISIBLE) -->
-                        <div id="lpInfoSection" class="lp-info-section show">
-                            <h3>📍 Land Parcel Information</h3>
-                            <div class="lp-info-content">
-                                <div id="lpDetails" style="margin-bottom: 8px; font-size: 13px; line-height: 1.6;">Select a farmer to view available land parcels</div>
-                                <div class="lp-total">Total Active LP Hectares: <span id="lpTotalHectares">-</span></div>
-                            </div>
-                        </div>
-
-                        <div id="outstandingSection" class="outstanding-section" style="display: none;">
+                        <!-- 1.1. OUTSTANDING SUMMARY (BELOW FARMER NAME - ALWAYS VISIBLE) -->
+                        <div id="outstandingSection" class="outstanding-section">
                             <h3>Outstanding Summary</h3>
                             <div class="outstanding-row">
                                 <div class="outstanding-item">
                                     <label>INV Outstanding</label>
-                                    <div id="invOutstandingList" class="outstanding-list"></div>
-                                    <div class="outstanding-subtotal">Subtotal: <span id="subtotalInv">-</span></div>
+                                    <div id="invOutstandingList" class="outstanding-list">N/A</div>
+                                    <div class="outstanding-subtotal">Subtotal: <span id="subtotalInv">0.00</span></div>
                                 </div>
                                 <div class="outstanding-item">
                                     <label>SA Outstanding</label>
-                                    <div id="saOutstandingList" class="outstanding-list"></div>
-                                    <div class="outstanding-subtotal">Subtotal: <span id="subtotalSa">-</span></div>
+                                    <div id="saOutstandingList" class="outstanding-list">N/A</div>
+                                    <div class="outstanding-subtotal">Subtotal: <span id="subtotalSa">0.00</span></div>
                                 </div>
                             </div>
                             <div class="outstanding-total">
-                                <strong>Total Outstanding: <span id="totalOutstanding">-</span></strong>
+                                <strong>Total Outstanding: <span id="totalOutstanding">0.00</span></strong>
                             </div>
                         </div>
+
+                        <!-- 2. QUOTATION HARVESTER -->
                         <div class="form-group required">
                             <label for="quotation">Quotation Harvester</label>
                             <input type="text" id="quotation" name="quotation" placeholder="e.g., QT-123456">
                             <p class="helper-text">QT harvester must be created in Zoho</p>
                             <div class="error-message" id="quotationError"></div>
                         </div>
+
+                        <!-- 3. HARVEST DATE -->
                         <div class="form-group required">
                             <label for="harvestDate">Harvest Date</label>
                             <input type="date" id="harvestDate" name="harvestDate">
                             <p class="helper-text">Planned or actual harvest date</p>
                             <div class="error-message" id="harvestDateError"></div>
                         </div>
+
+                        <!-- 4. HECTARE SERVICED -->
                         <div class="form-group required">
                             <label for="hectare">Hectare Serviced</label>
                             <input type="number" id="hectare" name="hectare" placeholder="e.g., 2.5" min="0" step="0.01">
                             <p class="helper-text" id="hectareHelperText">Land area to be harvested (in hectares)</p>
                             <div class="error-message" id="hectareError"></div>
+                        </div>
+
+                        <!-- 4.1. LP HECTARE INFO SECTION (BELOW HECTARE SERVICED - ALWAYS VISIBLE) -->
+                        <div id="lpInfoSection" class="lp-info-section show">
+                            <h3>📍 Land Parcel Information</h3>
+                            <div class="lp-info-content">
+                                <div id="lpDetails" style="margin-bottom: 8px; font-size: 13px; line-height: 1.6;">Select a farmer to view available land parcels</div>
+                                <div class="lp-total">Total Active LP Hectares: <span id="lpTotalHectares">-</span></div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -745,7 +753,7 @@
         };
 
         // ===== CONFIGURATION =====
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFvgJ7FUeuJogt3WzdKGQWAF5kAI082ULBDFvsV8KEoN5hPmSpSmEd7uUxiOqKq-pw_g/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJdEdUsL5wHErnx3DvR4ELL_Udj2MZwNOeSF4OYl4zvVw7pDGG5x_QaDwi090obWewuw/exec';
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
@@ -1011,7 +1019,13 @@
                 state.selectedFarmerGroupName = null;
                 clearField('farmer');
             } else if (fieldId === 'farmer') {
-                document.getElementById('outstandingSection').style.display = 'none';
+                // Reset Outstanding to default
+                document.getElementById('invOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalInv').textContent = '0.00';
+                document.getElementById('saOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalSa').textContent = '0.00';
+                document.getElementById('totalOutstanding').textContent = '0.00';
+                // Reset LP info
                 document.getElementById('lpDetails').textContent = 'Select a farmer to view available land parcels';
                 document.getElementById('lpTotalHectares').textContent = '-';
             }
@@ -1097,18 +1111,27 @@
                 const farmerRow = rows.find(row => row.c[0].v === farmerName);
 
                 if (farmerRow) {
-                    document.getElementById('invOutstandingList').textContent = farmerRow.c[3]?.v || '-';
-                    document.getElementById('subtotalInv').textContent = formatCurrency(farmerRow.c[4]?.v);
-                    document.getElementById('saOutstandingList').textContent = farmerRow.c[5]?.v || '-';
-                    document.getElementById('subtotalSa').textContent = formatCurrency(farmerRow.c[6]?.v);
-                    document.getElementById('totalOutstanding').textContent = formatCurrency(farmerRow.c[7]?.v);
-                    document.getElementById('outstandingSection').style.display = 'block';
+                    document.getElementById('invOutstandingList').textContent = farmerRow.c[3]?.v || 'N/A';
+                    document.getElementById('subtotalInv').textContent = formatCurrency(farmerRow.c[4]?.v) || '0.00';
+                    document.getElementById('saOutstandingList').textContent = farmerRow.c[5]?.v || 'N/A';
+                    document.getElementById('subtotalSa').textContent = formatCurrency(farmerRow.c[6]?.v) || '0.00';
+                    document.getElementById('totalOutstanding').textContent = formatCurrency(farmerRow.c[7]?.v) || '0.00';
                 } else {
-                    document.getElementById('outstandingSection').style.display = 'none';
+                    // Farmer not found - show N/A and 0.00
+                    document.getElementById('invOutstandingList').textContent = 'N/A';
+                    document.getElementById('subtotalInv').textContent = '0.00';
+                    document.getElementById('saOutstandingList').textContent = 'N/A';
+                    document.getElementById('subtotalSa').textContent = '0.00';
+                    document.getElementById('totalOutstanding').textContent = '0.00';
                 }
             } catch (error) {
                 console.error('Error loading outstanding:', error);
-                document.getElementById('outstandingSection').style.display = 'none';
+                // On error - show N/A and 0.00
+                document.getElementById('invOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalInv').textContent = '0.00';
+                document.getElementById('saOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalSa').textContent = '0.00';
+                document.getElementById('totalOutstanding').textContent = '0.00';
             }
         }
 
