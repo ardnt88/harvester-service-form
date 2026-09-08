@@ -702,22 +702,6 @@
                 </div>
 
                 <!-- ACK UPLOAD SECTION -->
-                <div id="ackUploadSection" style="margin-top: 24px; padding: 20px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; display: none;">
-                    <h3 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #333;">Upload Acknowledgement Contract (ACK)</h3>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 16px;">Selected Farmer: <strong id="ackFarmerName"></strong></p>
-                    
-                    <div class="file-upload-section">
-                        <label class="file-upload-label" for="step3AckFile">Upload ACK Contract</label>
-                        <input type="file" id="step3AckFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                        <div class="file-list" id="step3AckFileList"></div>
-                    </div>
-                    <p class="helper-text">Upload ACK contract for this farmer (optional)</p>
-                    
-                    <div style="display: flex; gap: 12px; margin-top: 16px;">
-                        <button type="button" class="btn-secondary" onclick="closeAckUpload()" style="flex: 1; max-width: 200px;">Cancel</button>
-                        <button type="button" class="btn-primary" onclick="confirmAckUpload()" style="flex: 1; max-width: 200px;">Confirm & Close</button>
-                    </div>
-                </div>
 
                 <!-- NAVIGATION BUTTONS -->
                 <div class="button-group" style="margin-top: 32px;">
@@ -1283,9 +1267,13 @@
                         </div>
                     </td>
                     <td>
-                        <button type="button" onclick="openAckUpload(${idx})" style="padding: 6px 10px; font-size: 11px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 6px; width: 100%; display: block;">Upload ACK</button>
-                        <button type="button" onclick="editFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 6px; margin-bottom: 6px; flex: 1;">Edit</button>
-                        <button type="button" onclick="deleteFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <input type="file" id="ackFile_${idx}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="handleAckFileSelect(${idx})">
+                            <button type="button" onclick="document.getElementById('ackFile_${idx}').click()" style="padding: 6px 10px; font-size: 11px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Upload ACK</button>
+                            <div id="ackStatus_${idx}" style="font-size: 10px; color: #666;">Not attached</div>
+                            <button type="button" onclick="editFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Edit</button>
+                            <button type="button" onclick="deleteFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -1318,39 +1306,20 @@
             showToast(`Farmer ${farmer.farmer} removed`, 'info');
         }
 
-        // ========== ACK UPLOAD HANDLERS (STEP 3) ==========
-        let currentAckFarmerIndex = null;
-
-        function openAckUpload(index) {
-            currentAckFarmerIndex = index;
-            const farmer = state.farmerBatch[index];
-            document.getElementById('ackFarmerName').textContent = farmer.farmer;
-            document.getElementById('ackUploadSection').style.display = 'block';
-            document.getElementById('step3AckFile').value = '';
-            document.getElementById('step3AckFileList').innerHTML = '';
-            document.getElementById('step3AckFile').focus();
-        }
-
-        function closeAckUpload() {
-            document.getElementById('ackUploadSection').style.display = 'none';
-            currentAckFarmerIndex = null;
-            document.getElementById('step3AckFile').value = '';
-            document.getElementById('step3AckFileList').innerHTML = '';
-        }
-
-        function confirmAckUpload() {
-            const fileInput = document.getElementById('step3AckFile');
-            const farmer = state.farmerBatch[currentAckFarmerIndex];
+        // ========== ACK FILE HANDLERS (PER-ROW) ==========
+        function handleAckFileSelect(index) {
+            const fileInput = document.getElementById(`ackFile_${index}`);
+            const statusDiv = document.getElementById(`ackStatus_${index}`);
             
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                farmer.ackFile = file.name;
-                showToast(`ACK uploaded for ${farmer.farmer}`, 'success');
+                state.farmerBatch[index].ackFile = file;
+                statusDiv.innerHTML = `✓ <strong style="color: #4caf50;">Attached:</strong> ${file.name}`;
+                showToast(`ACK attached for ${state.farmerBatch[index].farmer}`, 'success');
             } else {
-                showToast('No file selected', 'info');
+                state.farmerBatch[index].ackFile = null;
+                statusDiv.textContent = 'Not attached';
             }
-            
-            closeAckUpload();
         }
 
         // ========== SUBMIT ==========
@@ -1363,6 +1332,27 @@
             document.getElementById('finalSubmitBtn').disabled = true;
 
             try {
+                // STEP 1: Upload ACK files to Google Drive
+                const ackLinks = {};
+                for (let i = 0; i < state.farmerBatch.length; i++) {
+                    const farmer = state.farmerBatch[i];
+                    if (farmer.ackFile) {
+                        try {
+                            const fileData = await fileToBase64(farmer.ackFile);
+                            const uploadResponse = await uploadAckFileToGoogleDrive(fileData, farmer.ackFile.name, farmer.ackFile.type);
+                            
+                            if (uploadResponse.success) {
+                                ackLinks[farmer.farmer + '_' + farmer.quotation] = uploadResponse.link;
+                                showToast(`ACK uploaded for ${farmer.farmer}`, 'success');
+                            }
+                        } catch (uploadErr) {
+                            console.error('ACK upload error:', uploadErr);
+                            showToast(`Failed to upload ACK for ${farmer.farmer}`, 'error');
+                        }
+                    }
+                }
+
+                // STEP 2: Prepare records with ACK links
                 const AIRTABLE_BASE_ID = 'appBKZ02tJMQxqmTG';
                 const AIRTABLE_TABLE_ID = 'tblQocNNwyQkaiVSK';
                 const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d';
@@ -1379,6 +1369,7 @@
                 };
 
                 const records = state.farmerBatch.map(f => {
+                    const farmerKey = f.farmer + '_' + f.quotation;
                     return {
                         fields: {
                             'Farmer': f.farmer || '',
@@ -1394,13 +1385,14 @@
                             'SA Outstanding List': f.saOutstandingList || '',
                             'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
                             'Total Outstanding': toNumber(f.totalOutstanding),
-                            'ACK File Link': f.ackFile?.link || ''
+                            'ACK File Link': ackLinks[farmerKey] || ''
                         }
                     };
                 });
 
                 console.log('Submitting to Airtable:', JSON.stringify(records, null, 2));
 
+                // STEP 3: Submit to Airtable
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
                     {
@@ -1421,7 +1413,7 @@
                     throw new Error('HTTP ' + response.status + ': ' + JSON.stringify(result));
                 }
 
-                showToast(`✅ Submitted ${result.records.length} farmers to Airtable`, 'success');
+                showToast(`✅ Submitted ${result.records.length} farmers to Airtable with ${Object.keys(ackLinks).length} ACK files`, 'success');
 
                 setTimeout(() => {
                     location.reload();
@@ -1431,6 +1423,45 @@
                 showToast('Submission failed: ' + error.message, 'error');
                 console.log('Submit error:', error);
                 document.getElementById('finalSubmitBtn').disabled = false;
+            }
+        }
+
+        // Helper: Convert File to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Helper: Upload ACK file to Google Drive via Apps Script
+        async function uploadAckFileToGoogleDrive(base64Content, filename, mimeType) {
+            try {
+                const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbyFvgJ7FUeuJogt3WzdKGQWAF5kAI082ULBDFvsV8KEoN5hPmSpSmEd7uUxiOqKq-pw_g/exec';
+                
+                const response = await fetch(APPS_SCRIPT_UPLOAD_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'uploadACK',
+                        filename: filename,
+                        mimeType: mimeType,
+                        content: base64Content
+                    })
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Google Drive upload error:', error);
+                throw error;
             }
         }
 
