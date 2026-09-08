@@ -1110,18 +1110,30 @@
                 const farmerRow = rows.find(row => row.c[0].v === farmerName);
 
                 if (farmerRow) {
-                    document.getElementById('invOutstandingList').textContent = farmerRow.c[3]?.v || '-';
-                    document.getElementById('subtotalInv').textContent = formatCurrency(farmerRow.c[4]?.v);
-                    document.getElementById('saOutstandingList').textContent = farmerRow.c[5]?.v || '-';
-                    document.getElementById('subtotalSa').textContent = formatCurrency(farmerRow.c[6]?.v);
-                    document.getElementById('totalOutstanding').textContent = formatCurrency(farmerRow.c[7]?.v);
-                    document.getElementById('outstandingSection').style.display = 'block';
+                    document.getElementById('invOutstandingList').textContent = farmerRow.c[3]?.v || 'N/A';
+                    document.getElementById('subtotalInv').textContent = formatCurrency(farmerRow.c[4]?.v) || '0.00';
+                    document.getElementById('saOutstandingList').textContent = farmerRow.c[5]?.v || 'N/A';
+                    document.getElementById('subtotalSa').textContent = formatCurrency(farmerRow.c[6]?.v) || '0.00';
+                    document.getElementById('totalOutstanding').textContent = formatCurrency(farmerRow.c[7]?.v) || '0.00';
                 } else {
-                    document.getElementById('outstandingSection').style.display = 'none';
+                    // Farmer not found - show N/A and 0.00
+                    document.getElementById('invOutstandingList').textContent = 'N/A';
+                    document.getElementById('subtotalInv').textContent = '0.00';
+                    document.getElementById('saOutstandingList').textContent = 'N/A';
+                    document.getElementById('subtotalSa').textContent = '0.00';
+                    document.getElementById('totalOutstanding').textContent = '0.00';
                 }
+                // Always show the section
+                document.getElementById('outstandingSection').style.display = 'block';
             } catch (error) {
                 console.error('Error loading outstanding:', error);
-                document.getElementById('outstandingSection').style.display = 'none';
+                // On error - show N/A and 0.00
+                document.getElementById('invOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalInv').textContent = '0.00';
+                document.getElementById('saOutstandingList').textContent = 'N/A';
+                document.getElementById('subtotalSa').textContent = '0.00';
+                document.getElementById('totalOutstanding').textContent = '0.00';
+                document.getElementById('outstandingSection').style.display = 'block';
             }
         }
 
