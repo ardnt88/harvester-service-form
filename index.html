@@ -1012,7 +1012,8 @@
                 clearField('farmer');
             } else if (fieldId === 'farmer') {
                 document.getElementById('outstandingSection').style.display = 'none';
-                document.getElementById('lpInfoSection').classList.remove('show');
+                document.getElementById('lpDetails').textContent = 'Select a farmer to view available land parcels';
+                document.getElementById('lpTotalHectares').textContent = '-';
             }
         }
 
@@ -1047,8 +1048,12 @@
         function displayLPInfo(farmerId) {
             const lpDetailsDiv = document.getElementById('lpDetails');
             const lpTotalDiv = document.getElementById('lpTotalHectares');
+            const lpSection = document.getElementById('lpInfoSection');
             
             const totalLPHectares = state.farmerLPMap[farmerId] || 0;
+            
+            // Always show the section
+            lpSection.classList.add('show');
             
             if (totalLPHectares === 0) {
                 lpDetailsDiv.textContent = '⚠️ No active land parcels found for this farmer';
