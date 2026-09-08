@@ -1388,6 +1388,8 @@
                     };
                 });
 
+                console.log('Submitting to Airtable:', JSON.stringify(records, null, 2));
+
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
                     {
@@ -1400,11 +1402,14 @@
                     }
                 );
 
+                console.log('Airtable response status:', response.status);
+                const result = await response.json();
+                console.log('Airtable response:', result);
+
                 if (!response.ok) {
-                    throw new Error('HTTP ' + response.status);
+                    throw new Error('HTTP ' + response.status + ': ' + JSON.stringify(result));
                 }
 
-                const result = await response.json();
                 showToast(`✅ Submitted ${result.records.length} farmers to Airtable`, 'success');
 
                 setTimeout(() => {
