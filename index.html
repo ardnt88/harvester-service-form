@@ -732,6 +732,11 @@
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz86wItzlSjRFcovHOxi5q2f663zXaINzZMqGC7c-uKVfcsBTAuVE4RY05wOhk4qne8gQ/exec';
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
+        // ===== CLOUDINARY CONFIG =====
+        const CLOUDINARY_CLOUD_NAME = 'puefrvh8';
+        const CLOUDINARY_UPLOAD_PRESET = 'harvester_ack';
+        const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', async () => {
             await loadData();
@@ -1345,7 +1350,7 @@
                                 throw new Error('File is too large (max 100MB)');
                             }
 
-                            const uploadResponse = await uploadAckFileToGoogleDrive(farmer.ackFile);
+                            const uploadResponse = await uploadAckFileToCloudinary(farmer.ackFile);
                             const farmerKey = farmer.farmer + '_' + farmer.quotation;
                             ackLinks[farmerKey] = uploadResponse.link;
                             showToast(`✓ ACK uploaded for ${farmer.farmer}`, 'success');
@@ -1388,7 +1393,6 @@
 
                 const records = state.farmerBatch.map(f => {
                     const farmerKey = f.farmer + '_' + f.quotation;
-                    const ackData = ackBase64Data[farmerKey];
 
                     const fields = {
                         'Farmer': f.farmer || '',
@@ -1472,42 +1476,46 @@
             });
         }
 
-        // Helper: Upload file directly to Google Drive via Apps Script (FormData - no CORS issues)
-        async function uploadAckFileToGoogleDrive(file, retryCount = 0, maxRetries = 2) {
+        // Upload file directly to Cloudinary (supports large files up to 500MB)
+        async function uploadAckFileToCloudinary(file, retryCount = 0, maxRetries = 2) {
             try {
-                const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbz86wItzlSjRFcovHOxi5q2f663zXaINzZMqGC7c-uKVfcsBTAuVE4RY05wOhk4qne8gQ/exec';
+                // Validate file size (2-100MB for this use case)
+                const maxSizeBytes = 100 * 1024 * 1024; // 100MB hard limit
+                if (file.size > maxSizeBytes) {
+                    throw new Error(`File is ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum allowed size is 100MB.`);
+                }
 
-                // Use FormData instead of JSON (no CORS preflight!)
                 const formData = new FormData();
-                formData.append('action', 'uploadACK');
                 formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('folder', 'harvester-ack');
 
-                const response = await fetch(APPS_SCRIPT_UPLOAD_URL, {
+                const response = await fetch(CLOUDINARY_UPLOAD_URL, {
                     method: 'POST',
                     body: formData
                 });
 
                 const result = await response.json();
 
-                // Check for error in response
                 if (!response.ok || result.error) {
-                    throw new Error(result.error || `HTTP ${response.status}`);
+                    throw new Error(result.error?.message || result.error || `HTTP ${response.status}`);
                 }
 
-                if (!result.success) {
-                    throw new Error(result.error || 'Upload failed with unknown error');
-                }
-
-                return result;
+                // Cloudinary returns secure_url
+                return {
+                    success: true,
+                    link: result.secure_url,
+                    fileName: file.name
+                };
             } catch (error) {
                 console.error(`ACK upload error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error.message);
 
                 // Retry with exponential backoff
                 if (retryCount < maxRetries) {
-                    const delayMs = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                    const delayMs = Math.pow(2, retryCount) * 1000; // 1s, 2s
                     console.log(`Retrying ACK upload for "${file.name}" in ${delayMs}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delayMs));
-                    return uploadAckFileToGoogleDrive(file, retryCount + 1, maxRetries);
+                    return uploadAckFileToCloudinary(file, retryCount + 1, maxRetries);
                 }
 
                 throw new Error(`${file.name}: ${error.message}`);
