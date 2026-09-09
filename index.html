@@ -1332,24 +1332,41 @@
             document.getElementById('finalSubmitBtn').disabled = true;
 
             try {
-                // STEP 1: Upload ACK files to Google Drive
+                // STEP 1: Upload ACK files to Google Drive (MANDATORY)
                 const ackLinks = {};
+                const uploadErrors = [];
+
                 for (let i = 0; i < state.farmerBatch.length; i++) {
                     const farmer = state.farmerBatch[i];
                     if (farmer.ackFile) {
                         try {
+                            // Validate file size BEFORE encoding
+                            validateFileSize(farmer.ackFile);
+
                             const fileData = await fileToBase64(farmer.ackFile);
                             const uploadResponse = await uploadAckFileToGoogleDrive(fileData, farmer.ackFile.name, farmer.ackFile.type);
-                            
-                            if (uploadResponse.success) {
-                                ackLinks[farmer.farmer + '_' + farmer.quotation] = uploadResponse.link;
-                                showToast(`ACK uploaded for ${farmer.farmer}`, 'success');
-                            }
+
+                            ackLinks[farmer.farmer + '_' + farmer.quotation] = uploadResponse.link;
+                            showToast(`✓ ACK uploaded for ${farmer.farmer}`, 'success');
                         } catch (uploadErr) {
-                            console.error('ACK upload error:', uploadErr);
-                            showToast(`Failed to upload ACK for ${farmer.farmer}`, 'error');
+                            const errorMsg = uploadErr.message || uploadErr.toString();
+                            console.error('ACK upload error for ' + farmer.farmer + ':', errorMsg);
+                            uploadErrors.push(`${farmer.farmer}: ${errorMsg}`);
+                            showToast(`✗ Failed to upload ACK for ${farmer.farmer}: ${errorMsg}`, 'error');
                         }
+                    } else {
+                        // ACK file is required
+                        uploadErrors.push(`${farmer.farmer}: No ACK file attached. ACK contract is mandatory.`);
+                        showToast(`✗ ACK file required for ${farmer.farmer}`, 'error');
                     }
+                }
+
+                // FAIL SUBMISSION if any ACK upload failed
+                if (uploadErrors.length > 0) {
+                    showToast(`Submission blocked: ${uploadErrors.length} ACK file(s) failed. Please fix and try again.`, 'error');
+                    console.error('ACK upload failures:', uploadErrors);
+                    document.getElementById('finalSubmitBtn').disabled = false;
+                    return;
                 }
 
                 // STEP 2: Prepare records with ACK links
@@ -1426,6 +1443,14 @@
             }
         }
 
+        // Helper: Validate file size before upload
+        function validateFileSize(file) {
+            const maxSizeBytes = 5 * 1024 * 1024; // 5MB limit
+            if (file.size > maxSizeBytes) {
+                throw new Error(`File "${file.name}" is ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum allowed size is 5MB.`);
+            }
+        }
+
         // Helper: Convert File to Base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -1439,11 +1464,11 @@
             });
         }
 
-        // Helper: Upload ACK file to Google Drive via Apps Script
-        async function uploadAckFileToGoogleDrive(base64Content, filename, mimeType) {
+        // Helper: Upload ACK file to Google Drive via Apps Script with retry
+        async function uploadAckFileToGoogleDrive(base64Content, filename, mimeType, retryCount = 0, maxRetries = 2) {
             try {
                 const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbyFvgJ7FUeuJogt3WzdKGQWAF5kAI082ULBDFvsV8KEoN5hPmSpSmEd7uUxiOqKq-pw_g/exec';
-                
+
                 const response = await fetch(APPS_SCRIPT_UPLOAD_URL, {
                     method: 'POST',
                     headers: {
@@ -1458,10 +1483,29 @@
                 });
 
                 const result = await response.json();
+
+                // Check for error in response
+                if (!response.ok || result.error) {
+                    throw new Error(result.error || `HTTP ${response.status}`);
+                }
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Upload failed with unknown error');
+                }
+
                 return result;
             } catch (error) {
-                console.error('Google Drive upload error:', error);
-                throw error;
+                console.error(`ACK upload error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error.message);
+
+                // Retry with exponential backoff
+                if (retryCount < maxRetries) {
+                    const delayMs = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                    console.log(`Retrying ACK upload for "${filename}" in ${delayMs}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                    return uploadAckFileToGoogleDrive(base64Content, filename, mimeType, retryCount + 1, maxRetries);
+                }
+
+                throw new Error(`${filename}: ${error.message}`);
             }
         }
 
