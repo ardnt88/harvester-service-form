@@ -729,7 +729,7 @@
         };
 
         // ===== CONFIGURATION =====
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzStgbiihxex1UpACavepQEAn0-Cp8u5DXICuG7O9ToVFQ1WsyvDmlaZ7xRooWfyJqKlA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5UpkKUFa9XCqmcS77-zelQX0_QDT2vjtkHbzWPkPmUz1Da8mE-6ZQ0b_AbXGT61pi_g/exec';
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ========== INITIALIZATION ==========
@@ -1467,7 +1467,7 @@
         // Helper: Upload ACK file to Google Drive via Apps Script with retry
         async function uploadAckFileToGoogleDrive(base64Content, filename, mimeType, retryCount = 0, maxRetries = 2) {
             try {
-                const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbyFvgJ7FUeuJogt3WzdKGQWAF5kAI082ULBDFvsV8KEoN5hPmSpSmEd7uUxiOqKq-pw_g/exec';
+                const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbw5UpkKUFa9XCqmcS77-zelQX0_QDT2vjtkHbzWPkPmUz1Da8mE-6ZQ0b_AbXGT61pi_g/exec';
 
                 const response = await fetch(APPS_SCRIPT_UPLOAD_URL, {
                     method: 'POST',
