@@ -1406,9 +1406,8 @@
 
                     // Add ACK file as Base64 encoded string if present
                     if (ackData) {
-                        // Store only Base64 string (filename stored separately for reference)
+                        // Store only Base64 string
                         fields['ACKFileBase64'] = ackData.base64;
-                        fields['ACKFileName'] = ackData.filename; // Store filename in separate field if available
                     }
 
                     return { fields };
@@ -1416,7 +1415,7 @@
 
                 console.log('Submitting to Airtable:', JSON.stringify(records, null, 2));
 
-                // STEP 3: Submit to Airtable
+                // STEP 3: Submit to Airtable with typecast enabled
                 const response = await fetch(
                     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
                     {
@@ -1425,7 +1424,7 @@
                             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ records: records })
+                        body: JSON.stringify({ records: records, typecast: true })
                     }
                 );
 
