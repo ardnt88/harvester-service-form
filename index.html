@@ -877,10 +877,6 @@
                 validateHectareInput();
             });
 
-            document.getElementById('step3AckFile').addEventListener('change', (e) => {
-                handleFileUpload(e, 'ackFileList');
-            });
-
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.relative-field') && !e.target.closest('.search-input-wrapper')) {
                     closeAllDropdowns();
