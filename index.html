@@ -1407,7 +1407,7 @@
                     // Add ACK file as Base64 encoded string if present
                     if (ackData) {
                         // Store filename info + Base64 in simple format
-                        fields['ACK File (Base64)'] = `Filename: ${ackData.filename}\nSize: ${ackData.size} bytes\nType: ${ackData.type}\n\nBase64:\n${ackData.base64}`;
+                        fields['ACKFileBase64'] = `Filename: ${ackData.filename}\nSize: ${ackData.size} bytes\nType: ${ackData.type}\n\nBase64:\n${ackData.base64}`;
                     }
 
                     return { fields };
