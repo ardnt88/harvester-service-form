@@ -1451,9 +1451,9 @@
 
         // Helper: Validate file size before upload
         function validateFileSize(file) {
-            const maxSizeBytes = 5 * 1024 * 1024; // 5MB limit
+            const maxSizeBytes = 50 * 1024; // 50KB limit (Airtable Long text field max ~100KB)
             if (file.size > maxSizeBytes) {
-                throw new Error(`File "${file.name}" is ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum allowed size is 5MB.`);
+                throw new Error(`File "${file.name}" is ${(file.size / 1024).toFixed(1)}KB. Maximum allowed size is 50KB.`);
             }
         }
 
