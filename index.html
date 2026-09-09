@@ -1332,21 +1332,20 @@
             document.getElementById('finalSubmitBtn').disabled = true;
 
             try {
-                // STEP 1: Upload ACK files to Google Drive (MANDATORY)
-                const ackLinks = {};
+                // STEP 1: Upload ACK files to Airtable (MANDATORY)
+                const ackAttachments = {};
                 const uploadErrors = [];
 
                 for (let i = 0; i < state.farmerBatch.length; i++) {
                     const farmer = state.farmerBatch[i];
                     if (farmer.ackFile) {
                         try {
-                            // Validate file size BEFORE encoding
+                            // Validate file size BEFORE upload
                             validateFileSize(farmer.ackFile);
 
-                            const fileData = await fileToBase64(farmer.ackFile);
-                            const uploadResponse = await uploadAckFileToGoogleDrive(fileData, farmer.ackFile.name, farmer.ackFile.type);
-
-                            ackLinks[farmer.farmer + '_' + farmer.quotation] = uploadResponse.link;
+                            const uploadResponse = await uploadAckFileToAirtable(farmer.ackFile);
+                            const farmerKey = farmer.farmer + '_' + farmer.quotation;
+                            ackAttachments[farmerKey] = uploadResponse;
                             showToast(`✓ ACK uploaded for ${farmer.farmer}`, 'success');
                         } catch (uploadErr) {
                             const errorMsg = uploadErr.message || uploadErr.toString();
@@ -1387,24 +1386,30 @@
 
                 const records = state.farmerBatch.map(f => {
                     const farmerKey = f.farmer + '_' + f.quotation;
-                    return {
-                        fields: {
-                            'Farmer': f.farmer || '',
-                            'Timestamp': new Date().toISOString(),
-                            'Quotation': f.quotation || '',
-                            'Agronomist': f.agronomist || '',
-                            'Farmer Group': f.farmerGroup || '',
-                            'Paddy Buyer': f.paddyBuyer || '',
-                            'Harvest Date': f.harvestDate || '',
-                            'Hectare': toNumber(f.hectare),
-                            'INV Outstanding List': f.invOutstandingList || '',
-                            'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
-                            'SA Outstanding List': f.saOutstandingList || '',
-                            'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
-                            'Total Outstanding': toNumber(f.totalOutstanding),
-                            'ACK File Link': ackLinks[farmerKey] || ''
-                        }
+                    const ackAttachment = ackAttachments[farmerKey];
+
+                    const fields = {
+                        'Farmer': f.farmer || '',
+                        'Timestamp': new Date().toISOString(),
+                        'Quotation': f.quotation || '',
+                        'Agronomist': f.agronomist || '',
+                        'Farmer Group': f.farmerGroup || '',
+                        'Paddy Buyer': f.paddyBuyer || '',
+                        'Harvest Date': f.harvestDate || '',
+                        'Hectare': toNumber(f.hectare),
+                        'INV Outstanding List': f.invOutstandingList || '',
+                        'INV Outstanding Amount': toNumber(f.invOutstandingAmount),
+                        'SA Outstanding List': f.saOutstandingList || '',
+                        'SA Outstanding Amount': toNumber(f.saOutstandingAmount),
+                        'Total Outstanding': toNumber(f.totalOutstanding)
                     };
+
+                    // Add ACK attachment if present (should be an attachment field in Airtable)
+                    if (ackAttachment) {
+                        fields['ACK File'] = [ackAttachment];
+                    }
+
+                    return { fields };
                 });
 
                 console.log('Submitting to Airtable:', JSON.stringify(records, null, 2));
@@ -1464,48 +1469,52 @@
             });
         }
 
-        // Helper: Upload ACK file to Google Drive via Apps Script with retry
-        async function uploadAckFileToGoogleDrive(base64Content, filename, mimeType, retryCount = 0, maxRetries = 2) {
+        // Helper: Upload ACK file directly to Airtable with retry
+        async function uploadAckFileToAirtable(file, retryCount = 0, maxRetries = 2) {
             try {
-                const APPS_SCRIPT_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbw5UpkKUFa9XCqmcS77-zelQX0_QDT2vjtkHbzWPkPmUz1Da8mE-6ZQ0b_AbXGT61pi_g/exec';
+                const AIRTABLE_BASE_ID = 'appBKZ02tJMQxqmTG';
+                const AIRTABLE_TOKEN = 'patyRjHasZZmELmtc.d1716d099e50dc7d88720dc151b2c467c08813dbc557f7f9a30ec5179c0b338d';
 
-                const response = await fetch(APPS_SCRIPT_UPLOAD_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'uploadACK',
-                        filename: filename,
-                        mimeType: mimeType,
-                        content: base64Content
-                    })
-                });
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('file', file);
 
-                const result = await response.json();
+                // Upload to Airtable attachment upload endpoint
+                const uploadResponse = await fetch(
+                    `https://content.airtable.com/v0/b/${AIRTABLE_BASE_ID}/attachments`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_TOKEN}`
+                        },
+                        body: formData
+                    }
+                );
 
-                // Check for error in response
-                if (!response.ok || result.error) {
-                    throw new Error(result.error || `HTTP ${response.status}`);
+                if (!uploadResponse.ok) {
+                    throw new Error(`HTTP ${uploadResponse.status}: ${uploadResponse.statusText}`);
                 }
 
-                if (!result.success) {
-                    throw new Error(result.error || 'Upload failed with unknown error');
+                const uploadData = await uploadResponse.json();
+
+                if (!uploadData.id) {
+                    throw new Error('No attachment ID returned from Airtable');
                 }
 
-                return result;
+                console.log(`✓ File uploaded to Airtable: ${file.name} (ID: ${uploadData.id})`);
+                return uploadData;
             } catch (error) {
                 console.error(`ACK upload error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error.message);
 
                 // Retry with exponential backoff
                 if (retryCount < maxRetries) {
                     const delayMs = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-                    console.log(`Retrying ACK upload for "${filename}" in ${delayMs}ms...`);
+                    console.log(`Retrying ACK upload for "${file.name}" in ${delayMs}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delayMs));
-                    return uploadAckFileToGoogleDrive(base64Content, filename, mimeType, retryCount + 1, maxRetries);
+                    return uploadAckFileToAirtable(file, retryCount + 1, maxRetries);
                 }
 
-                throw new Error(`${filename}: ${error.message}`);
+                throw new Error(`${file.name}: ${error.message}`);
             }
         }
 
