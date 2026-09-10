@@ -589,6 +589,94 @@
         .step2-form-wrapper {
             margin-bottom: 32px;
         }
+        .choice-container {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+        .choice-card {
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            padding: 32px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .choice-card:hover {
+            border-color: #318507;
+            box-shadow: 0 8px 24px rgba(49, 133, 7, 0.15);
+            transform: translateY(-4px);
+        }
+        .choice-card.selected {
+            border-color: #318507;
+            background: #f0fdf4;
+            box-shadow: 0 8px 24px rgba(49, 133, 7, 0.2);
+        }
+        .choice-card input[type="radio"] {
+            display: none;
+        }
+        .choice-card-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .choice-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .choice-card-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .rejected-submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        .rejected-submissions-table thead {
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+        .rejected-submissions-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+        .rejected-submissions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .rejected-submissions-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.rejected {
+            background: #ffe8e8;
+            color: #c41e3a;
+        }
+        .rejection-reason {
+            font-size: 12px;
+            color: #666;
+            max-width: 300px;
+            word-break: break-word;
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -659,15 +747,40 @@
             <p>Multi-step form for harvester service requests</p>
         </div>
         <div class="progress-bar">
+            <div class="progress-step" id="stepIndicator0">0. Submission Mode</div>
             <div class="progress-step" id="stepIndicator1">1. Selection</div>
             <div class="progress-step" id="stepIndicator2">2. Farmer Details</div>
             <div class="progress-step" id="stepIndicator3">3. Review & Submit</div>
         </div>
 
+        <!-- STEP 0: CREATE NEW OR EDIT SUBMISSION (LANDING) -->
+        <div class="step-content active" id="step0">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="section-title">How would you like to proceed?</div>
+                <div class="choice-container">
+                    <label class="choice-card" onclick="selectSubmissionMode('new')">
+                        <input type="radio" name="submissionMode" value="new">
+                        <div class="choice-card-icon">📝</div>
+                        <div class="choice-card-title">Create New Submission</div>
+                        <div class="choice-card-desc">Submit a new harvester service request</div>
+                    </label>
+                    <label class="choice-card" onclick="selectSubmissionMode('edit')">
+                        <input type="radio" name="submissionMode" value="edit">
+                        <div class="choice-card-icon">✏️</div>
+                        <div class="choice-card-title">Edit Rejected Submission</div>
+                        <div class="choice-card-desc">Revise and resubmit a previously rejected request</div>
+                    </label>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-primary" id="proceedBtn" disabled onclick="proceedFromLanding()">Proceed →</button>
+                </div>
+            </div>
+        </div>
+
         <!-- STEP 1: AGRONOMIST, FARMER GROUP, PB SELECTION -->
-        <div class="step-content active" id="step1">
+        <div class="step-content" id="step1">
             <div class="step-1">
-                <div class="section-title">Step 1: Select Agronomist, Farmer Group & Paddy Buyer</div>
+                <div class="section-title">Step 1: Agronomist, Farmer Group & Paddy Buyer</div>
                 <form id="step1Form">
                     <div class="form-group required relative-field">
                         <label for="agronomist">Agronomist Name</label>
@@ -701,16 +814,17 @@
                         <div class="error-message" id="paddyBuyerError"></div>
                     </div>
                     <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="goToStep(0)">← Back</button>
                         <button type="button" class="btn-primary" onclick="goToStep(2)">Next: Add Farmers</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- STEP 2: ADD FARMERS WITH QT, DATE, UPLOAD ACK -->
+        <!-- STEP 2: ADD FARMERS / EDIT REJECTED SUBMISSIONS OR ADD NEW -->
         <div class="step-content" id="step2">
             <div class="step-2">
-                <div class="section-title">Step 2: Add Farmers & Harvest Details</div>
+                <div class="section-title" id="step2Title">Step 2: Add Farmers & Harvest Details</div>
                 <p class="helper-text">Selected: <strong id="step2Summary"></strong></p>
 
                 <!-- ADDED FARMERS LIST -->
@@ -809,6 +923,27 @@
                     <p style="margin-top: 8px; color: #856404; font-size: 13px;">Please go back to Step 2 and add at least one farmer</p>
                 </div>
 
+                <!-- REJECTED SUBMISSIONS TABLE (SHOWN ONLY IN EDIT MODE) -->
+                <div id="rejectedSubmissionsSection" style="display: none; margin-bottom: 32px;">
+                    <div class="section-title">Previously Rejected Submissions</div>
+                    <p class="helper-text" style="margin-bottom: 16px;">Click "Edit" on any rejected submission to modify it, or add new farmers below</p>
+                    <div class="review-table-wrapper">
+                        <table class="rejected-submissions-table">
+                            <thead>
+                                <tr>
+                                    <th>Farmer</th>
+                                    <th>QT</th>
+                                    <th>Harvest Date</th>
+                                    <th>Status</th>
+                                    <th>Rejection Reason</th>
+                                    <th style="width: 180px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejectedSubmissionsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- REVIEW TABLE -->
                 <div id="reviewTableContainer" style="margin: 20px 0;">
                     <div class="review-table-wrapper">
@@ -855,8 +990,11 @@
             selectedPaddyBuyer: null,
             selectedPaddyBuyerName: null,
             farmerBatch: [],
-            currentStep: 1,
-            farmerLPMap: {} // NEW: farmer_id -> total_lp_hectares mapping
+            currentStep: 0,
+            farmerLPMap: {},
+            submissionMode: null, // 'new' or 'edit'
+            rejectedSubmissions: [],
+            selectedSubmissionId: null // if editing
         };
 
         // ===== CONFIGURATION =====
@@ -926,12 +1064,13 @@
 
             if (stepNum === 2 && !validateStep1()) return;
             if (stepNum === 3) {
+                renderRejectedSubmissions();
                 renderFinalReview();
             }
 
             state.currentStep = stepNum;
             document.querySelectorAll('.step-content').forEach((el, idx) => {
-                el.classList.toggle('active', idx === stepNum - 1);
+                el.classList.toggle('active', idx === stepNum);
             });
             updateStepIndicators();
 
@@ -941,14 +1080,141 @@
         }
 
         function updateStepIndicators() {
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 0; i <= 3; i++) {
                 const indicator = document.getElementById(`stepIndicator${i}`);
+                if (!indicator) continue;
                 indicator.classList.remove('active', 'completed');
                 if (i < state.currentStep) {
                     indicator.classList.add('completed');
                 } else if (i === state.currentStep) {
                     indicator.classList.add('active');
                 }
+            }
+        }
+
+        // ========== STEP 0: SUBMISSION MODE SELECTION ==========
+        function selectSubmissionMode(mode) {
+            state.submissionMode = mode;
+            document.querySelectorAll('.choice-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.closest('.choice-card').classList.add('selected');
+            document.getElementById('proceedBtn').disabled = false;
+        }
+
+        function proceedFromLanding() {
+            if (!state.submissionMode) {
+                showToast('Please select an option', 'error');
+                return;
+            }
+
+            // Reset form state
+            document.getElementById('step1Form').reset();
+            document.getElementById('agronomist').value = '';
+            document.getElementById('farmerGroup').value = '';
+            document.getElementById('paddyBuyer').value = '';
+            document.getElementById('agronomistInput').value = '';
+            document.getElementById('farmerGroupInput').value = '';
+            document.getElementById('paddyBuyerInput').value = '';
+            state.farmerBatch = [];
+
+            if (state.submissionMode === 'edit') {
+                document.getElementById('step2Title').textContent = 'Step 2: Select Batch to Edit';
+            } else {
+                document.getElementById('step2Title').textContent = 'Step 2: Add Farmers & Harvest Details';
+            }
+
+            goToStep(1);
+        }
+
+        async function renderRejectedSubmissions() {
+            if (state.submissionMode !== 'edit') {
+                document.getElementById('rejectedSubmissionsSection').style.display = 'none';
+                return;
+            }
+
+            try {
+                const agronomist = document.getElementById('agronomist').value;
+                const farmerGroup = document.getElementById('farmerGroup').value;
+                const paddyBuyer = document.getElementById('paddyBuyer').value;
+
+                if (!agronomist || !farmerGroup || !paddyBuyer) return;
+
+                // Fetch rejected submissions from Apps Script
+                const url = APPS_SCRIPT_URL + `?type=rejected&agronomist=${encodeURIComponent(agronomist)}&farmerGroup=${encodeURIComponent(farmerGroup)}&paddyBuyer=${encodeURIComponent(paddyBuyer)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                state.rejectedSubmissions = result.values || [];
+
+                const tbody = document.getElementById('rejectedSubmissionsBody');
+                tbody.innerHTML = '';
+
+                if (state.rejectedSubmissions.length === 0) {
+                    document.getElementById('rejectedSubmissionsSection').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('rejectedSubmissionsSection').style.display = 'block';
+
+                state.rejectedSubmissions.forEach((row, idx) => {
+                    const tr = document.createElement('tr');
+                    const farmer = row[2] || '';
+                    const qt = row[0] || '';
+                    const harvestDate = row[14] || '';
+                    const status = row[24] || 'Rejected';
+                    const reason = row[25] || '';
+
+                    tr.innerHTML = `
+                        <td>${farmer}</td>
+                        <td><strong>${qt}</strong></td>
+                        <td>${harvestDate}</td>
+                        <td><span class="status-badge rejected">${status}</span></td>
+                        <td><div class="rejection-reason">${reason}</div></td>
+                        <td>
+                            <button type="button" class="btn-secondary" onclick="editRejectedSubmission(${idx})" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                            <button type="button" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; color: #e74c3c;" onclick="removeFromBatch(${idx})">Remove</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error fetching rejected submissions:', error);
+            }
+        }
+
+        function editRejectedSubmission(idx) {
+            const submission = state.rejectedSubmissions[idx];
+            state.selectedSubmissionId = submission[0]; // Use QT as ID
+
+            // Pre-fill the form with rejected submission data
+            document.getElementById('farmer').value = submission[2] || '';
+            document.getElementById('farmerInput').value = submission[2] || '';
+            document.getElementById('quotation').value = submission[0] || '';
+            document.getElementById('harvestDate').value = submission[14] || '';
+            document.getElementById('hectare').value = submission[15] || '';
+
+            // Load farmer details
+            loadFarmerDetails(submission[2]);
+
+            // Expand the form
+            document.getElementById('farmerFormBlock').classList.add('expanded');
+            document.getElementById('farmerInput').focus();
+
+            // Scroll to form
+            document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function removeFromBatch(idx) {
+            state.rejectedSubmissions.splice(idx, 1);
+            renderRejectedSubmissions();
+        }
+
+        async function loadFarmerDetails(farmerName) {
+            const farmers = getFilteredFarmers();
+            const farmer = farmers.find(f => f[0] === farmerName);
+            if (farmer) {
+                displayLPInfo(farmer[1]);
+                await loadOutstandingData(farmerName);
             }
         }
 
@@ -1455,6 +1721,85 @@
         }
 
         // ========== SUBMIT ==========
+        async function submitEditedSubmission() {
+            try {
+                // Upload ACK files first
+                const ackLinks = {};
+                const uploadErrors = [];
+
+                for (let i = 0; i < state.farmerBatch.length; i++) {
+                    const farmer = state.farmerBatch[i];
+                    if (farmer.ackFile) {
+                        try {
+                            if (farmer.ackFile.size > 100 * 1024 * 1024) {
+                                throw new Error('File is too large (max 100MB)');
+                            }
+                            const uploadResponse = await uploadAckFileToCloudinary(farmer.ackFile);
+                            const farmerKey = farmer.farmer + '_' + farmer.quotation;
+                            ackLinks[farmerKey] = uploadResponse.link;
+                            showToast(`✓ ACK uploaded for ${farmer.farmer}`, 'success');
+                        } catch (uploadErr) {
+                            const errorMsg = uploadErr.message || uploadErr.toString();
+                            console.error('ACK upload error:', errorMsg);
+                            uploadErrors.push(`${farmer.farmer}: ${errorMsg}`);
+                            showToast(`✗ Failed to upload ACK for ${farmer.farmer}: ${errorMsg}`, 'error');
+                        }
+                    } else {
+                        uploadErrors.push(`${farmer.farmer}: No ACK file attached`);
+                        showToast(`✗ ACK file required for ${farmer.farmer}`, 'error');
+                    }
+                }
+
+                if (uploadErrors.length > 0) {
+                    hideLoading();
+                    showToast(`Submission blocked: ACK file(s) failed`, 'error');
+                    document.getElementById('finalSubmitBtn').disabled = false;
+                    return;
+                }
+
+                // Prepare payload for Apps Script
+                const payload = {
+                    type: 'resubmit',
+                    action: 'resubmit',
+                    submissionId: state.selectedSubmissionId,
+                    farmers: state.farmerBatch.map(f => {
+                        const farmerKey = f.farmer + '_' + f.quotation;
+                        return {
+                            ...f,
+                            ackFileLink: ackLinks[farmerKey] || ''
+                        };
+                    }),
+                    timestamp: new Date().toISOString()
+                };
+
+                // Send to Apps Script for upsert
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    showToast('✓ Submission updated successfully!', 'success');
+                    // Reset form and go back to landing
+                    state.farmerBatch = [];
+                    state.submissionMode = null;
+                    state.selectedSubmissionId = null;
+                    setTimeout(() => goToStep(0), 1500);
+                } else {
+                    showToast(`Error: ${result.error || 'Failed to submit'}`, 'error');
+                    document.getElementById('finalSubmitBtn').disabled = false;
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Submission error:', error);
+                showToast(`Submission failed: ${error.message}`, 'error');
+                document.getElementById('finalSubmitBtn').disabled = false;
+            }
+        }
+
         async function submitAllData() {
             if (state.farmerBatch.length === 0) {
                 showToast('No farmers to submit', 'error');
@@ -1463,6 +1808,12 @@
 
             document.getElementById('finalSubmitBtn').disabled = true;
             showLoading('Uploading ACK files and submitting data...');
+
+            // If in edit mode, use Apps Script route for upsert
+            if (state.submissionMode === 'edit' && state.selectedSubmissionId) {
+                await submitEditedSubmission();
+                return;
+            }
 
             try {
                 // STEP 1: Upload ACK files to Google Drive (MANDATORY)
