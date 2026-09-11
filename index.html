@@ -1231,7 +1231,20 @@
             document.getElementById('farmer').value = submission[2] || '';
             document.getElementById('farmerInput').value = submission[2] || '';
             document.getElementById('quotation').value = submission[0] || '';
-            document.getElementById('harvestDate').value = submission[14] || '';
+
+            // Format harvest date properly (convert dd/mm/yyyy or other formats to YYYY-MM-DD for input field)
+            const harvestDateRaw = submission[14] || '';
+            if (harvestDateRaw) {
+                // Try to parse and format the date
+                const dateObj = new Date(harvestDateRaw);
+                if (!isNaN(dateObj)) {
+                    const yyyy = dateObj.getFullYear();
+                    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const dd = String(dateObj.getDate()).padStart(2, '0');
+                    document.getElementById('harvestDate').value = `${yyyy}-${mm}-${dd}`;
+                }
+            }
+
             document.getElementById('hectare').value = submission[15] || '';
 
             // Load farmer details (async)
