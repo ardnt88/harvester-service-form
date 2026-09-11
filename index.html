@@ -965,6 +965,41 @@
                     </div>
                 </div>
 
+                <!-- EDIT FORM (SHOWN WHEN EDITING A SUBMISSION IN STEP 3) -->
+                <div class="form-block step2-form-wrapper" id="farmerFormBlockStep3" style="display: none; margin-bottom: 32px;">
+                    <h3 style="margin: 0 0 20px 0; font-size: 14px; font-weight: 600; color: #333;">Edit Submission</h3>
+                    <form id="step3EditForm">
+                        <div class="form-group required relative-field">
+                            <label for="quotationStep3">Quotation Harvester</label>
+                            <input type="text" id="quotationStep3" name="quotation" placeholder="e.g., QT-123456" readonly style="background: #f5f5f5; cursor: not-allowed;">
+                            <p class="helper-text">QT harvester must be created in Zoho (read-only)</p>
+                            <div class="error-message" id="quotationStep3Error"></div>
+                        </div>
+                        <div class="form-group required">
+                            <label for="farmerStep3">Farmer Name</label>
+                            <input type="text" id="farmerStep3" name="farmer" placeholder="Select farmer">
+                            <p class="helper-text">Farmer name from the submission</p>
+                            <div class="error-message" id="farmerStep3Error"></div>
+                        </div>
+                        <div class="form-group required">
+                            <label for="harvestDateStep3">Harvest Date</label>
+                            <input type="date" id="harvestDateStep3" name="harvestDate">
+                            <p class="helper-text">Planned or actual harvest date</p>
+                            <div class="error-message" id="harvestDateStep3Error"></div>
+                        </div>
+                        <div class="form-group required">
+                            <label for="hectareStep3">Hectare Serviced</label>
+                            <input type="number" id="hectareStep3" name="hectare" placeholder="e.g., 2.5" min="0" step="0.01">
+                            <p class="helper-text" id="hectareStep3HelperText">Land area to be harvested (in hectares)</p>
+                            <div class="error-message" id="hectareStep3Error"></div>
+                        </div>
+                        <div class="button-group" style="margin-top: 20px;">
+                            <button type="button" class="btn-secondary" onclick="goToStep(2)">← Back</button>
+                            <button type="button" class="btn-primary" onclick="saveStep3Edit()" style="max-width: 300px;">✓ Save Edit</button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- REVIEW TABLE -->
                 <div id="reviewTableContainer" style="margin: 20px 0;">
                     <div class="review-table-wrapper">
@@ -1320,23 +1355,18 @@
 
             // Re-set form values after Step 3 loads (with delay to ensure DOM is ready)
             setTimeout(() => {
-                // Show the form block and hide the table
-                document.getElementById('farmerFormBlock').style.display = 'block';
-                document.getElementById('rejectedSubmissionsSection').style.display = 'none';
-                document.getElementById('addFarmerSection').style.display = 'none';
+                // Show the edit form and hide batch review
+                document.getElementById('farmerFormBlockStep3').style.display = 'block';
+                document.getElementById('reviewTableContainer').style.display = 'none';
 
-                document.getElementById('farmer').value = farmer;
-                document.getElementById('farmerInput').value = farmer;
-                document.getElementById('quotation').value = quotation;
-                document.getElementById('quotation').readOnly = true; // Lock quotation in edit mode
-                document.getElementById('harvestDate').value = harvestDate;
-                document.getElementById('hectare').value = hectare;
+                // Populate Step 3 edit form
+                document.getElementById('quotationStep3').value = quotation;
+                document.getElementById('farmerStep3').value = farmer;
+                document.getElementById('harvestDateStep3').value = harvestDate;
+                document.getElementById('hectareStep3').value = hectare;
 
-                // Expand the form
-                document.getElementById('farmerFormBlock').classList.add('expanded');
-                document.getElementById('farmerInput').focus();
-
-                document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('farmerStep3').focus();
+                document.getElementById('farmerFormBlockStep3').scrollIntoView({ behavior: 'smooth' });
             }, 200);
         }
 
@@ -2183,6 +2213,42 @@
             } else {
                 collapseFarmerForm();
             }
+        }
+
+        function saveStep3Edit() {
+            // Save the edited submission from Step 3 and go back to Step 2
+            const quotation = document.getElementById('quotationStep3').value;
+            const farmer = document.getElementById('farmerStep3').value;
+            const harvestDate = document.getElementById('harvestDateStep3').value;
+            const hectare = document.getElementById('hectareStep3').value;
+
+            if (!quotation || !farmer || !harvestDate || !hectare) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            // Add edited submission to batch
+            const farmerRecord = {
+                agronomist: state.selectedAgronomistName,
+                farmerGroup: state.selectedFarmerGroupName,
+                farmer: farmer,
+                quotation: quotation,
+                harvestDate: harvestDate,
+                hectare: parseFloat(hectare),
+                paddyBuyer: state.selectedPaddyBuyerName,
+                invOutstandingList: '-',
+                invOutstandingAmount: '-',
+                saOutstandingList: '-',
+                saOutstandingAmount: '-',
+                totalOutstanding: '-',
+                lpHectares: 0
+            };
+
+            state.farmerBatch.push(farmerRecord);
+            showToast('Submission saved to batch', 'success');
+
+            // Return to Step 2 (rejected table) to edit more
+            goToStep(2);
         }
 
         // ========== TOAST NOTIFICATIONS ==========
