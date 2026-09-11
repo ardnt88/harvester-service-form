@@ -815,7 +815,7 @@
                     </div>
                     <div class="button-group">
                         <button type="button" class="btn-secondary" onclick="goToStep(0)">← Back</button>
-                        <button type="button" class="btn-primary" onclick="goToStep(2)">Next: Add Farmers</button>
+                        <button type="button" class="btn-primary" id="step1NextBtn" onclick="goToNextFromStep1()">Next: Add Farmers</button>
                     </div>
                 </form>
             </div>
@@ -906,8 +906,8 @@
 
                 <!-- NAVIGATION BUTTONS -->
                 <div class="button-group" style="margin-top: 32px;">
-                    <button type="button" class="btn-secondary" onclick="goToStep(1)">← Back</button>
-                    <button type="button" class="btn-success" onclick="goToStep(3)">Continue to Review →</button>
+                    <button type="button" class="btn-secondary" id="step2BackBtn" onclick="goBackFromStep2()">← Back</button>
+                    <button type="button" class="btn-success" id="step2NextBtn" onclick="goToNextFromStep2()">Continue to Review →</button>
                 </div>
             </div>
         </div>
@@ -1125,6 +1125,32 @@
             }
 
             goToStep(1);
+        }
+
+        function goToNextFromStep1() {
+            if (!validateStep1()) return;
+
+            // If EDIT mode: go to Step 3 (rejected submissions table)
+            // If NEW mode: go to Step 2 (add farmer form)
+            if (state.submissionMode === 'edit') {
+                goToStep(3);
+            } else {
+                goToStep(2);
+            }
+        }
+
+        function goBackFromStep2() {
+            // If editing from Step 3 table: go back to Step 3
+            // Otherwise: go back to Step 1
+            if (state.submissionMode === 'edit' && state.selectedSubmissionId) {
+                goToStep(3);
+            } else {
+                goToStep(1);
+            }
+        }
+
+        function goToNextFromStep2() {
+            goToStep(3);
         }
 
         async function renderRejectedSubmissions() {
