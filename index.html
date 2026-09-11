@@ -1223,7 +1223,7 @@
             }
         }
 
-        function editRejectedSubmission(idx) {
+        async function editRejectedSubmission(idx) {
             const submission = state.rejectedSubmissions[idx];
 
             // Debug: log the submission data
@@ -1236,7 +1236,6 @@
             state.selectedSubmissionId = submission[0]; // Use QT as ID
 
             // Pre-fill the form with rejected submission data
-            // Note: We must re-set values AFTER goToStep() because Step 2 might reset them
             const quotation = submission[0] || '';
             const farmer = submission[2] || '';
             const harvestDateRaw = submission[14] || '';
@@ -1254,12 +1253,12 @@
                 }
             }
 
-            // Load farmer details (async)
-            loadFarmerDetails(farmer);
-
             // Clear any previous validation errors
             document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
+
+            // Load farmer details and WAIT for it to complete
+            await loadFarmerDetails(farmer);
 
             // Navigate to Step 2, THEN re-set all form values to ensure they stick
             goToStep(2);
