@@ -1064,8 +1064,8 @@
 
             if (stepNum === 2 && !validateStep1()) return;
             if (stepNum === 3) {
-                renderRejectedSubmissions();
                 renderFinalReview();
+                // Rejected submissions only shown in Step 2, not Step 3
             }
 
             state.currentStep = stepNum;
