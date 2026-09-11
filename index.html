@@ -1147,14 +1147,23 @@
             }
 
             if (stepNum === 3) {
-                // Edit mode: show batch review (if no submission selected) or edit form (if submission selected)
-                // New mode: show batch review table
-                // Note: edit form is shown via editRejectedSubmission() which pre-fills the form and shows farmerFormBlock
-                if (state.submissionMode !== 'edit') {
+                if (state.submissionMode === 'edit') {
+                    // EDIT MODE: Show batch review or edit form
+                    if (state.selectedSubmissionId) {
+                        // Show edit form (when coming from "Edit" button)
+                        // Form is already pre-filled by editRejectedSubmission()
+                        document.getElementById('farmerFormBlockStep3').style.display = 'block';
+                        document.getElementById('reviewTableContainer').style.display = 'none';
+                    } else {
+                        // Show batch review (when coming from "Continue to Review")
+                        document.getElementById('farmerFormBlockStep3').style.display = 'none';
+                        document.getElementById('reviewTableContainer').style.display = 'block';
+                        renderFinalReview();
+                    }
+                } else {
+                    // NEW MODE: Show batch review
                     renderFinalReview();
                 }
-                // In edit mode, the edit form is already shown by editRejectedSubmission()
-                // We don't render anything here for edit mode, just show Step 3
             }
 
             state.currentStep = stepNum;
@@ -1235,6 +1244,8 @@
         }
 
         function goToNextFromStep2() {
+            // Clear the selected submission ID so Step 3 knows to show batch review, not edit form
+            state.selectedSubmissionId = null;
             goToStep(3);
         }
 
