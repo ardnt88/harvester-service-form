@@ -1207,15 +1207,10 @@
                     const reason = row[25] || '';
 
                     // Format harvest date to human-readable format (YYYY-MM-DD)
+                    // Extract directly from ISO string to avoid timezone issues
                     let harvestDate = harvestDateRaw;
-                    if (harvestDateRaw) {
-                        const dateObj = new Date(harvestDateRaw);
-                        if (!isNaN(dateObj)) {
-                            const yyyy = dateObj.getFullYear();
-                            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                            const dd = String(dateObj.getDate()).padStart(2, '0');
-                            harvestDate = `${yyyy}-${mm}-${dd}`;
-                        }
+                    if (harvestDateRaw && harvestDateRaw.length >= 10) {
+                        harvestDate = harvestDateRaw.substring(0, 10);
                     }
 
                     tr.innerHTML = `
