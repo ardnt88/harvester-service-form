@@ -2216,7 +2216,7 @@
         }
 
         function saveStep3Edit() {
-            // Save the edited submission from Step 3 and go back to Step 2
+            // Save the edited submission from Step 3 and show batch review
             const quotation = document.getElementById('quotationStep3').value;
             const farmer = document.getElementById('farmerStep3').value;
             const harvestDate = document.getElementById('harvestDateStep3').value;
@@ -2247,8 +2247,10 @@
             state.farmerBatch.push(farmerRecord);
             showToast('Submission saved to batch', 'success');
 
-            // Return to Step 2 (rejected table) to edit more
-            goToStep(2);
+            // Hide edit form and show batch review
+            document.getElementById('farmerFormBlockStep3').style.display = 'none';
+            document.getElementById('reviewTableContainer').style.display = 'block';
+            renderFinalReview();
         }
 
         // ========== TOAST NOTIFICATIONS ==========
