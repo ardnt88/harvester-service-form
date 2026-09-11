@@ -1160,11 +1160,15 @@
             }
 
             try {
-                const agronomist = document.getElementById('agronomist').value;
-                const farmerGroup = document.getElementById('farmerGroup').value;
-                const paddyBuyer = document.getElementById('paddyBuyer').value;
+                // Use the DISPLAY NAMES from state (not the IDs from hidden fields)
+                const agronomist = state.selectedAgronomistName;
+                const farmerGroup = state.selectedFarmerGroupName;
+                const paddyBuyer = state.selectedPaddyBuyerName;
 
-                if (!agronomist || !farmerGroup || !paddyBuyer) return;
+                if (!agronomist || !farmerGroup || !paddyBuyer) {
+                    console.log('Missing selections:', { agronomist, farmerGroup, paddyBuyer });
+                    return;
+                }
 
                 // Fetch rejected submissions from Apps Script
                 const url = APPS_SCRIPT_URL + `?type=rejected&agronomist=${encodeURIComponent(agronomist)}&farmerGroup=${encodeURIComponent(farmerGroup)}&paddyBuyer=${encodeURIComponent(paddyBuyer)}`;
