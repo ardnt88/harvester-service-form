@@ -1202,9 +1202,21 @@
                     const tr = document.createElement('tr');
                     const farmer = row[2] || '';
                     const qt = row[0] || '';
-                    const harvestDate = row[14] || '';
+                    const harvestDateRaw = row[14] || '';
                     const status = row[24] || 'Rejected';
                     const reason = row[25] || '';
+
+                    // Format harvest date to human-readable format (YYYY-MM-DD)
+                    let harvestDate = harvestDateRaw;
+                    if (harvestDateRaw) {
+                        const dateObj = new Date(harvestDateRaw);
+                        if (!isNaN(dateObj)) {
+                            const yyyy = dateObj.getFullYear();
+                            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const dd = String(dateObj.getDate()).padStart(2, '0');
+                            harvestDate = `${yyyy}-${mm}-${dd}`;
+                        }
+                    }
 
                     tr.innerHTML = `
                         <td>${farmer}</td>
