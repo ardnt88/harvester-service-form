@@ -1233,6 +1233,7 @@
             console.log('submission[0] (should be QT):', submission[0]);
             console.log('submission[2] (should be farmer):', submission[2]);
 
+            state.submissionMode = 'edit';
             state.selectedSubmissionId = submission[0]; // Use QT as ID
 
             // Pre-fill the form with rejected submission data
@@ -1268,6 +1269,7 @@
                 document.getElementById('farmer').value = farmer;
                 document.getElementById('farmerInput').value = farmer;
                 document.getElementById('quotation').value = quotation;
+                document.getElementById('quotation').readOnly = true; // Lock quotation in edit mode
                 document.getElementById('harvestDate').value = harvestDate;
                 document.getElementById('hectare').value = hectare;
 
@@ -1626,15 +1628,17 @@
             if (!document.getElementById('farmer').value) errors.farmer = 'Farmer is required';
             if (!document.getElementById('quotation').value) errors.quotation = 'Quotation is required';
             if (!document.getElementById('harvestDate').value) errors.harvestDate = 'Harvest Date is required';
-            if (!document.getElementById('hectare').value || parseFloat(document.getElementById('hectare').value) <= 0) 
+            if (!document.getElementById('hectare').value || parseFloat(document.getElementById('hectare').value) <= 0)
                 errors.hectare = 'Valid hectare amount is required';
 
-            // NEW: Check hectare exceeds LP hectares
-            const farmerId = document.getElementById('farmer').value;
-            const hectareInput = parseFloat(document.getElementById('hectare').value) || 0;
-            const maxLPHectares = state.farmerLPMap[farmerId] || 0;
-            if (hectareInput > maxLPHectares && hectareInput > 0) {
-                errors.hectare = `Hectare serviced exceeds available LP hectares (${maxLPHectares.toFixed(2)})`;
+            // Check hectare exceeds LP hectares (only in NEW mode, not in edit mode)
+            if (state.submissionMode === 'new') {
+                const farmerId = document.getElementById('farmer').value;
+                const hectareInput = parseFloat(document.getElementById('hectare').value) || 0;
+                const maxLPHectares = state.farmerLPMap[farmerId] || 0;
+                if (hectareInput > maxLPHectares && hectareInput > 0) {
+                    errors.hectare = `Hectare serviced exceeds available LP hectares (${maxLPHectares.toFixed(2)})`;
+                }
             }
 
             Object.keys(errors).forEach(field => {
