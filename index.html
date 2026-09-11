@@ -830,6 +830,27 @@
                 <!-- ADDED FARMERS LIST -->
                 <div id="step2FarmersList" style="margin-bottom: 32px;"></div>
 
+                <!-- REJECTED SUBMISSIONS TABLE (EDIT MODE - STEP 2) -->
+                <div id="rejectedSubmissionsSection" style="display: none; margin-bottom: 32px;">
+                    <div class="section-title">Rejected Submissions to Edit</div>
+                    <p class="helper-text" style="margin-bottom: 16px;">Click "Edit" to modify and resubmit</p>
+                    <div class="review-table-wrapper">
+                        <table class="rejected-submissions-table">
+                            <thead>
+                                <tr>
+                                    <th>Farmer</th>
+                                    <th>QT</th>
+                                    <th>Harvest Date</th>
+                                    <th>Status</th>
+                                    <th>Rejection Reason</th>
+                                    <th style="width: 180px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejectedSubmissionsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- ADD FARMER BUTTON -->
                 <div class="add-farmer-btn-container" id="addFarmerSection">
                     <button type="button" class="btn-add-farmer" onclick="toggleFarmerForm()">+ Add Farmer</button>
