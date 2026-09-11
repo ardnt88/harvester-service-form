@@ -1987,10 +1987,12 @@
             document.getElementById('finalSubmitBtn').disabled = true;
             showLoading('Uploading ACK files and submitting data...');
 
-            // If in edit mode, use Apps Script route for upsert
-            if (state.submissionMode === 'edit' && state.selectedSubmissionId) {
-                await submitEditedSubmission();
-                return;
+            // Mark edited submissions so Apps Script knows to upsert instead of create
+            if (state.submissionMode === 'edit') {
+                state.farmerBatch.forEach(f => {
+                    f.isEdit = true;
+                    f.editQuotation = state.selectedSubmissionId;
+                });
             }
 
             try {
