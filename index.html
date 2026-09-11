@@ -1903,7 +1903,7 @@
         // ========== SUBMIT ==========
         async function submitEditedSubmission() {
             try {
-                // Upload ACK files first
+                // Upload ACK files if provided (OPTIONAL in edit mode)
                 const ackLinks = {};
                 const uploadErrors = [];
 
@@ -1924,15 +1924,13 @@
                             uploadErrors.push(`${farmer.farmer}: ${errorMsg}`);
                             showToast(`✗ Failed to upload ACK for ${farmer.farmer}: ${errorMsg}`, 'error');
                         }
-                    } else {
-                        uploadErrors.push(`${farmer.farmer}: No ACK file attached`);
-                        showToast(`✗ ACK file required for ${farmer.farmer}`, 'error');
                     }
+                    // In edit mode, ACK file is OPTIONAL - no error if not provided
                 }
 
                 if (uploadErrors.length > 0) {
                     hideLoading();
-                    showToast(`Submission blocked: ACK file(s) failed`, 'error');
+                    showToast(`Submission blocked: ACK upload failed`, 'error');
                     document.getElementById('finalSubmitBtn').disabled = false;
                     return;
                 }
