@@ -998,7 +998,7 @@
         };
 
         // ===== CONFIGURATION =====
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSVLHB60m8dM3OKNeiFRbY2TSAeZTaODHNdx6WZS0s_XDawH61NcblX9fXVCwWCTI1zw/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzgjhC_9D3dAiw-KF3HKtBg7o13KavyMPaPCchjzLwCoPm-RWbNy8J5yD5tMW-WHQTwww/exec';
         const GSHEET_ID = '1trlDC41mk1De6nzckYvjRXTn6W3KYhvrBdVnLTk5W2M';
 
         // ===== CLOUDINARY CONFIG =====
@@ -1174,6 +1174,13 @@
                 const url = APPS_SCRIPT_URL + `?type=rejected&agronomist=${encodeURIComponent(agronomist)}&farmerGroup=${encodeURIComponent(farmerGroup)}&paddyBuyer=${encodeURIComponent(paddyBuyer)}`;
                 const response = await fetch(url);
                 const result = await response.json();
+
+                // Log debug information to console
+                if (result.debug && Array.isArray(result.debug)) {
+                    console.log('%c=== REJECTED SUBMISSIONS DEBUG ===', 'color: #318507; font-weight: bold; font-size: 14px;');
+                    result.debug.forEach(log => console.log('%c' + log, 'color: #318507; font-size: 12px;'));
+                }
+
                 state.rejectedSubmissions = result.values || [];
 
                 const tbody = document.getElementById('rejectedSubmissionsBody');
