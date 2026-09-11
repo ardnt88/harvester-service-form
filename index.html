@@ -1112,13 +1112,14 @@
             }
 
             if (stepNum === 3) {
-                // Edit mode: show rejected submissions table OR edit form
+                // Edit mode: show batch review (if no submission selected) or edit form (if submission selected)
                 // New mode: show batch review table
-                if (state.submissionMode === 'edit') {
-                    renderRejectedSubmissions();
-                } else {
+                // Note: edit form is shown via editRejectedSubmission() which pre-fills the form and shows farmerFormBlock
+                if (state.submissionMode !== 'edit') {
                     renderFinalReview();
                 }
+                // In edit mode, the edit form is already shown by editRejectedSubmission()
+                // We don't render anything here for edit mode, just show Step 3
             }
 
             state.currentStep = stepNum;
@@ -1319,6 +1320,11 @@
 
             // Re-set form values after Step 3 loads (with delay to ensure DOM is ready)
             setTimeout(() => {
+                // Show the form block and hide the table
+                document.getElementById('farmerFormBlock').style.display = 'block';
+                document.getElementById('rejectedSubmissionsSection').style.display = 'none';
+                document.getElementById('addFarmerSection').style.display = 'none';
+
                 document.getElementById('farmer').value = farmer;
                 document.getElementById('farmerInput').value = farmer;
                 document.getElementById('quotation').value = quotation;
