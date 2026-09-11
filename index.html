@@ -1225,6 +1225,14 @@
 
         function editRejectedSubmission(idx) {
             const submission = state.rejectedSubmissions[idx];
+
+            // Debug: log the submission data
+            console.log('==== EDITING SUBMISSION ====');
+            console.log('Index:', idx);
+            console.log('Full submission array:', submission);
+            console.log('submission[0] (should be QT):', submission[0]);
+            console.log('submission[2] (should be farmer):', submission[2]);
+
             state.selectedSubmissionId = submission[0]; // Use QT as ID
 
             // Pre-fill the form with rejected submission data
