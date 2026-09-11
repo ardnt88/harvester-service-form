@@ -1236,43 +1236,48 @@
             state.selectedSubmissionId = submission[0]; // Use QT as ID
 
             // Pre-fill the form with rejected submission data
-            document.getElementById('farmer').value = submission[2] || '';
-            document.getElementById('farmerInput').value = submission[2] || '';
-            document.getElementById('quotation').value = submission[0] || '';
+            // Note: We must re-set values AFTER goToStep() because Step 2 might reset them
+            const quotation = submission[0] || '';
+            const farmer = submission[2] || '';
+            const harvestDateRaw = submission[14] || '';
+            const hectare = submission[15] || '';
 
             // Format harvest date properly (convert dd/mm/yyyy or other formats to YYYY-MM-DD for input field)
-            const harvestDateRaw = submission[14] || '';
+            let harvestDate = '';
             if (harvestDateRaw) {
-                // Try to parse and format the date
                 const dateObj = new Date(harvestDateRaw);
                 if (!isNaN(dateObj)) {
                     const yyyy = dateObj.getFullYear();
                     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
                     const dd = String(dateObj.getDate()).padStart(2, '0');
-                    document.getElementById('harvestDate').value = `${yyyy}-${mm}-${dd}`;
+                    harvestDate = `${yyyy}-${mm}-${dd}`;
                 }
             }
 
-            document.getElementById('hectare').value = submission[15] || '';
-
             // Load farmer details (async)
-            loadFarmerDetails(submission[2]);
+            loadFarmerDetails(farmer);
 
             // Clear any previous validation errors
             document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
 
-            // Expand the form
-            document.getElementById('farmerFormBlock').classList.add('expanded');
-            document.getElementById('farmerInput').focus();
+            // Navigate to Step 2, THEN re-set all form values to ensure they stick
+            goToStep(2);
 
-            // Navigate to Step 2 AFTER a delay to let farmer details load
+            // Re-set form values after Step 2 loads (with delay to ensure DOM is ready)
             setTimeout(() => {
-                goToStep(2);
-                setTimeout(() => {
-                    document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            }, 300);
+                document.getElementById('farmer').value = farmer;
+                document.getElementById('farmerInput').value = farmer;
+                document.getElementById('quotation').value = quotation;
+                document.getElementById('harvestDate').value = harvestDate;
+                document.getElementById('hectare').value = hectare;
+
+                // Expand the form
+                document.getElementById('farmerFormBlock').classList.add('expanded');
+                document.getElementById('farmerInput').focus();
+
+                document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+            }, 200);
         }
 
         function removeFromBatch(idx) {
