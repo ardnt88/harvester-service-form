@@ -2020,9 +2020,11 @@
                             showToast(`✗ Failed to upload ACK for ${farmer.farmer}: ${errorMsg}`, 'error');
                         }
                     } else {
-                        // ACK file is required
-                        uploadErrors.push(`${farmer.farmer}: No ACK file attached. ACK contract is mandatory.`);
-                        showToast(`✗ ACK file required for ${farmer.farmer}`, 'error');
+                        // ACK is optional for edits, required for new submissions
+                        if (!farmer.isEdit) {
+                            uploadErrors.push(`${farmer.farmer}: No ACK file attached. ACK contract is mandatory for new submissions.`);
+                            showToast(`✗ ACK file required for ${farmer.farmer}`, 'error');
+                        }
                     }
                 }
 
