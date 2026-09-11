@@ -1063,8 +1063,35 @@
             document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
 
             if (stepNum === 2 && !validateStep1()) return;
+
+            if (stepNum === 2) {
+                updateStep2Summary();
+                // EDIT mode: show rejected submissions table
+                // NEW mode: show farmer form
+                if (state.submissionMode === 'edit') {
+                    document.getElementById('addFarmerSection').style.display = 'none';
+                    document.getElementById('farmerFormBlock').style.display = 'none';
+                    renderRejectedSubmissions();
+                } else {
+                    document.getElementById('addFarmerSection').style.display = 'block';
+                    document.getElementById('farmerFormBlock').classList.remove('expanded');
+                }
+            }
+
+            // Update button texts based on mode
             if (stepNum === 3) {
-                // Edit mode: show rejected submissions table
+                const saveBtn = document.querySelector('button[onclick="saveFarmerAndCollapse()"]');
+                const submitBtn = document.getElementById('finalSubmitBtn');
+                if (saveBtn && state.submissionMode === 'edit') {
+                    saveBtn.textContent = '✓ Save Edit';
+                }
+                if (submitBtn && state.submissionMode === 'edit') {
+                    submitBtn.textContent = 'Submit All Edited';
+                }
+            }
+
+            if (stepNum === 3) {
+                // Edit mode: show rejected submissions table OR edit form
                 // New mode: show batch review table
                 if (state.submissionMode === 'edit') {
                     renderRejectedSubmissions();
@@ -1078,10 +1105,6 @@
                 el.classList.toggle('active', idx === stepNum);
             });
             updateStepIndicators();
-
-            if (stepNum === 2) {
-                updateStep2Summary();
-            }
         }
 
         function updateStepIndicators() {
@@ -1138,13 +1161,10 @@
         function goToNextFromStep1() {
             if (!validateStep1()) return;
 
-            // If EDIT mode: go to Step 3 (rejected submissions table)
-            // If NEW mode: go to Step 2 (add farmer form)
-            if (state.submissionMode === 'edit') {
-                goToStep(3);
-            } else {
-                goToStep(2);
-            }
+            // Both modes go to Step 2:
+            // - EDIT mode: Step 2 shows rejected submissions table
+            // - NEW mode: Step 2 shows farmer form to add new entries
+            goToStep(2);
         }
 
         function goBackFromStep2() {
@@ -1273,10 +1293,10 @@
             // Load farmer details and WAIT for it to complete
             await loadFarmerDetails(farmer);
 
-            // Navigate to Step 2, THEN re-set all form values to ensure they stick
-            goToStep(2);
+            // Navigate to Step 3 (edit form), THEN re-set all form values to ensure they stick
+            goToStep(3);
 
-            // Re-set form values after Step 2 loads (with delay to ensure DOM is ready)
+            // Re-set form values after Step 3 loads (with delay to ensure DOM is ready)
             setTimeout(() => {
                 document.getElementById('farmer').value = farmer;
                 document.getElementById('farmerInput').value = farmer;
@@ -2127,7 +2147,15 @@
             }
 
             addFarmerToBatch();
-            collapseFarmerForm();
+
+            // In EDIT mode: go back to Step 2 (rejected table) to edit more
+            // In NEW mode: stay in Step 2, just collapse the form
+            if (state.submissionMode === 'edit') {
+                goToStep(2);
+                showToast('Submission saved to batch', 'success');
+            } else {
+                collapseFarmerForm();
+            }
         }
 
         // ========== TOAST NOTIFICATIONS ==========
