@@ -1191,7 +1191,9 @@
                     return;
                 }
 
+                // Show table and hide empty state warning
                 document.getElementById('rejectedSubmissionsSection').style.display = 'block';
+                document.getElementById('emptyStateWarning').style.display = 'none';
 
                 state.rejectedSubmissions.forEach((row, idx) => {
                     const tr = document.createElement('tr');
@@ -1237,8 +1239,13 @@
             document.getElementById('farmerFormBlock').classList.add('expanded');
             document.getElementById('farmerInput').focus();
 
-            // Scroll to form
-            document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+            // Navigate to Step 2 to show the form
+            goToStep(2);
+
+            // Scroll to form after navigation
+            setTimeout(() => {
+                document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         }
 
         function removeFromBatch(idx) {
