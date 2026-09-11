@@ -1710,6 +1710,9 @@
             const tableContainer = document.getElementById('reviewTableContainer');
             const tbody = document.getElementById('finalReviewBody');
 
+            // Hide rejected submissions in final review step
+            document.getElementById('rejectedSubmissionsSection').style.display = 'none';
+
             if (state.farmerBatch.length === 0) {
                 warningEl.style.display = 'block';
                 tableContainer.style.display = 'none';
@@ -1755,8 +1758,6 @@
                             <input type="file" id="ackFile_${idx}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="handleAckFileSelect(${idx})">
                             <button type="button" onclick="document.getElementById('ackFile_${idx}').click()" style="padding: 6px 10px; font-size: 11px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Upload ACK</button>
                             <div id="ackStatus_${idx}" style="font-size: 10px; color: #666;">Not attached</div>
-                            <button type="button" onclick="editFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Edit</button>
-                            <button type="button" onclick="deleteFarmer(${idx})" style="padding: 6px 10px; font-size: 11px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                         </div>
                     </td>
                 </tr>
