@@ -1064,8 +1064,13 @@
 
             if (stepNum === 2 && !validateStep1()) return;
             if (stepNum === 3) {
-                renderFinalReview();
-                // Rejected submissions only shown in Step 2, not Step 3
+                // Edit mode: show rejected submissions table
+                // New mode: show batch review table
+                if (state.submissionMode === 'edit') {
+                    renderRejectedSubmissions();
+                } else {
+                    renderFinalReview();
+                }
             }
 
             state.currentStep = stepNum;
