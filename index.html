@@ -1232,20 +1232,20 @@
             document.getElementById('harvestDate').value = submission[14] || '';
             document.getElementById('hectare').value = submission[15] || '';
 
-            // Load farmer details
+            // Load farmer details (async)
             loadFarmerDetails(submission[2]);
 
             // Expand the form
             document.getElementById('farmerFormBlock').classList.add('expanded');
             document.getElementById('farmerInput').focus();
 
-            // Navigate to Step 2 to show the form
-            goToStep(2);
-
-            // Scroll to form after navigation
+            // Navigate to Step 2 AFTER a delay to let farmer details load
             setTimeout(() => {
-                document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+                goToStep(2);
+                setTimeout(() => {
+                    document.getElementById('farmerFormBlock').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }, 300);
         }
 
         function removeFromBatch(idx) {
