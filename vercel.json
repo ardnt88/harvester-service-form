@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "functions": {
+    "api/harvester-bot.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
