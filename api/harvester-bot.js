@@ -176,7 +176,7 @@ function extractTopics(summary) {
 }
 
 // Main webhook handler
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(400).json({ error: "Only POST allowed" });
   }
