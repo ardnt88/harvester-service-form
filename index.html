@@ -1987,13 +1987,8 @@
             document.getElementById('finalSubmitBtn').disabled = true;
             showLoading('Uploading ACK files and submitting data...');
 
-            // Mark edited submissions so Apps Script knows to upsert instead of create
-            if (state.submissionMode === 'edit') {
-                state.farmerBatch.forEach(f => {
-                    f.isEdit = true;
-                    f.editQuotation = state.selectedSubmissionId;
-                });
-            }
+            // Each farmer in edit mode already has isEdit and editQuotation set from saveStep3Edit()
+            // No need to override here
 
             try {
                 // STEP 1: Upload ACK files to Google Drive (MANDATORY)
@@ -2240,21 +2235,17 @@
                 return;
             }
 
-            // Add edited submission to batch
+            // Add edited submission to batch with isEdit flag
+            // Only include changed fields (harvest date, hectare) to preserve original outstanding data
             const farmerRecord = {
                 agronomist: state.selectedAgronomistName,
-                farmerGroup: state.selectedFarmerGroupName,
                 farmer: farmer,
                 quotation: quotation,
                 harvestDate: harvestDate,
                 hectare: parseFloat(hectare),
                 paddyBuyer: state.selectedPaddyBuyerName,
-                invOutstandingList: '-',
-                invOutstandingAmount: '-',
-                saOutstandingList: '-',
-                saOutstandingAmount: '-',
-                totalOutstanding: '-',
-                lpHectares: 0
+                isEdit: true,
+                editQuotation: quotation
             };
 
             state.farmerBatch.push(farmerRecord);
